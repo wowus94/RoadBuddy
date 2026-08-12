@@ -1,42 +1,86 @@
 package ru.vlyashuk.roadbuddy
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.Font
-import org.jetbrains.compose.resources.stringResource
-import roadbuddy.sharedui.generated.resources.IndieFlower_Regular
-import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.road_buddy
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import org.koin.compose.KoinApplication
+import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.koinConfiguration
+import ru.vlyashuk.roadbuddy.di.appModule
+import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
+import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.theme.AppTheme
+
+@OptIn(ExperimentalSerializationApi::class)
+private val navConfig = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclassesOfSealed<Route>()
+        }
+    }
+}
 
 @Preview
 @Composable
 fun App(
+    koinAppDeclaration: KoinAppDeclaration? = null,
     onThemeChanged: @Composable (isDark: Boolean) -> Unit = {}
-) = AppTheme(onThemeChanged) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(Res.string.road_buddy),
-            fontFamily = FontFamily(Font(Res.font.IndieFlower_Regular)),
-            style = MaterialTheme.typography.displayLarge
-        )
-    }
+) {
+    KoinApplication(configuration = koinConfiguration(declaration = {
+        koinAppDeclaration?.invoke(this)
+        modules(appModule)
+    }), content = {
+        AppTheme(
+            onThemeChanged
+        ) {
+            val backStack = rememberNavBackStack(navConfig, Route.Home)
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { backStack.removeLastOrNull() },
+                    entryDecorators = listOf(
+                        rememberSaveableStateHolderNavEntryDecorator(),
+                        rememberViewModelStoreNavEntryDecorator()
+                    ),
+                    entryProvider = entryProvider {
+                        entry<Route.Home> {
+                            HomeScreen(
+                                onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
+                                onNavigateToCreate = { backStack.add(Route.Create) }
+                            )
+                        }
+                        entry<Route.Details> { key ->
+                            Text("Details for ${key.requestId}")
+                        }
+                        entry<Route.Create> {
+                            Text("Create request screen")
+                        }
+                    }
+                )
+            }
+        }
+    })
 }
