@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -24,6 +22,8 @@ import org.koin.compose.KoinApplication
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.koinConfiguration
 import ru.vlyashuk.roadbuddy.di.appModule
+import ru.vlyashuk.roadbuddy.presentation.create.CreateScreen
+import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.theme.AppTheme
@@ -37,7 +37,6 @@ private val navConfig = SavedStateConfiguration {
     }
 }
 
-@Preview
 @Composable
 fun App(
     koinAppDeclaration: KoinAppDeclaration? = null,
@@ -73,10 +72,15 @@ fun App(
                             )
                         }
                         entry<Route.Details> { key ->
-                            Text("Details for ${key.requestId}")
+                            DetailsScreen(
+                                requestId = key.requestId,
+                                onBack = { backStack.removeLastOrNull() }
+                            )
                         }
                         entry<Route.Create> {
-                            Text("Create request screen")
+                            CreateScreen(
+                                onBack = { backStack.removeLastOrNull() }
+                            )
                         }
                     }
                 )
