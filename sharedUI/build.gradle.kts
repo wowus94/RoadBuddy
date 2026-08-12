@@ -49,6 +49,7 @@ kotlin {
             implementation(libs.multiplatformSettings)
             implementation(libs.kotlinx.datetime)
             implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
             implementation(libs.materialKolor)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

@@ -4,6 +4,9 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import ru.vlyashuk.roadbuddy.data.local.database.AppDatabase
+import ru.vlyashuk.roadbuddy.data.local.database.getDatabaseBuilder
+import ru.vlyashuk.roadbuddy.data.local.database.getRoomDatabase
 import ru.vlyashuk.roadbuddy.data.repository.RoadRequestRepositoryImpl
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
@@ -15,8 +18,12 @@ import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 
 val appModule = module {
 
+    // Room
+    single<AppDatabase> { getRoomDatabase(getDatabaseBuilder()) }
+    single { get<AppDatabase>().roadRequestDao() }
+
     // Repository
-    single<RoadRequestRepository> { RoadRequestRepositoryImpl() }
+    single<RoadRequestRepository> { RoadRequestRepositoryImpl(get()) }
 
     // UseCase
     factoryOf(::GetRequestsUseCase)
