@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
+import kotlin.coroutines.cancellation.CancellationException
 
 data class DetailsUiState(
     val request: RoadRequest? = null,
@@ -25,22 +26,19 @@ class DetailsViewModel(
     val uiState: StateFlow<DetailsUiState> = _uiState.asStateFlow()
 
     init {
-        loadRequest()
-    }
-
-    fun loadRequest() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val request = getRequestByIdUseCase(requestId)
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        request = request,
-                        error = if (request == null) "Request not found" else null
-                    )
+                getRequestByIdUseCase(requestId).collect { request ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            request = request,
+                            error = if (request == null) "Request not found" else null
+                        )
+                    }
                 }
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }

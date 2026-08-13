@@ -1,6 +1,5 @@
-package ru.vlyashuk.roadbuddy.presentation.create
+package ru.vlyashuk.roadbuddy.presentation.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,65 +13,30 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.koin.compose.viewmodel.koinViewModel
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
 
 @Composable
-fun CreateScreen(
-    viewModel: CreateViewModel = koinViewModel(),
-    onBack: () -> Unit = {}
-) {
-    val state by viewModel.uiState.collectAsState()
-
-    if (state.isSaved) {
-        LaunchedEffect(Unit) { onBack() }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("New request") },
-                navigationIcon = {
-                    Text(
-                        "Back",
-                        modifier = Modifier.clickable(onClick = onBack)
-                    )
-                }
-            )
-        }
-    ) { padding ->
-        CreateForm(
-            state = state,
-            onTitleChange = viewModel::onTitleChanged,
-            onDescriptionChange = viewModel::onDescriptionChanged,
-            onTypeChange = viewModel::onTypeChanged,
-            onAuthorNameChange = viewModel::onAuthorNameChanged,
-            onContactChange = viewModel::onContactChanged,
-            onSave = viewModel::createRequest,
-            modifier = Modifier.padding(padding)
-        )
-    }
-}
-
-@Composable
-private fun CreateForm(
-    state: CreateUiState,
+fun RequestForm(
+    title: String,
+    description: String,
+    type: RequestType,
+    authorName: String,
+    contact: String,
+    isSaving: Boolean,
+    isValid: Boolean,
+    error: String?,
+    buttonText: String,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onTypeChange: (RequestType) -> Unit,
     onAuthorNameChange: (String) -> Unit,
     onContactChange: (String) -> Unit,
-    onSave: () -> Unit,
+    onSubmit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -83,14 +47,14 @@ private fun CreateForm(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         OutlinedTextField(
-            value = state.title,
+            value = title,
             onValueChange = onTitleChange,
             label = { Text("Title *") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
-            value = state.description,
+            value = description,
             onValueChange = onDescriptionChange,
             label = { Text("Description") },
             modifier = Modifier.fillMaxWidth(),
@@ -98,51 +62,50 @@ private fun CreateForm(
         )
 
         Text("Request type", style = MaterialTheme.typography.labelLarge)
-        RequestType.entries.forEach { type ->
+        RequestType.entries.forEach { entry ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 RadioButton(
-                    selected = type == state.type,
-                    onClick = { onTypeChange(type) }
+                    selected = entry == type,
+                    onClick = { onTypeChange(entry) }
                 )
-                Text(type.name)
+                Text(entry.name)
             }
         }
 
         OutlinedTextField(
-            value = state.authorName,
+            value = authorName,
             onValueChange = onAuthorNameChange,
             label = { Text("Your name *") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
-            value = state.contact,
+            value = contact,
             onValueChange = onContactChange,
             label = { Text("Contact *") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (state.error != null) {
+        if (error != null) {
             Text(
-                text = state.error,
+                text = error,
                 color = MaterialTheme.colorScheme.error
             )
         }
 
         Button(
-            onClick = onSave,
-            enabled = state.isValid && !state.isSaving,
+            onClick = onSubmit,
+            enabled = isValid && !isSaving,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (state.isSaving) {
+            if (isSaving) {
                 CircularProgressIndicator()
             } else {
-                Text("Publish")
+                Text(buttonText)
             }
         }
     }
 }
-

@@ -30,6 +30,7 @@ import ru.vlyashuk.roadbuddy.utils.DateTimeConverter
 fun DetailsScreen(
     requestId: String,
     onBack: () -> Unit = {},
+    onNavigateToEdit: (String) -> Unit = {},
     viewModel: DetailsViewModel = koinViewModel(parameters = { parametersOf(requestId) })
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -44,6 +45,15 @@ fun DetailsScreen(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clickable(onClick = onBack),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                },
+                actions = {
+                    Text(
+                        text = "Edit",
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .clickable { onNavigateToEdit(requestId) },
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -62,6 +72,7 @@ fun DetailsScreen(
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
+
                 state.request == null -> Text(
                     text = "Request not found",
                     modifier = Modifier.align(Alignment.Center)

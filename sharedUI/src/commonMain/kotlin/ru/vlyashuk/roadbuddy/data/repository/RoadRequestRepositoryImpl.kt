@@ -27,6 +27,15 @@ class RoadRequestRepositoryImpl(
         dao.insert(entity)
     }
 
-    override suspend fun getRequest(id: String): RoadRequest? =
-        dao.getById(id)?.let { RoadRequestMapper.toDomain(it) }
+    override fun getRequest(id: String): Flow<RoadRequest?> =
+        dao.getById(id).map { entity ->
+            entity?.let { RoadRequestMapper.toDomain(it) }
+        }
+
+    override suspend fun updateRequest(request: RoadRequest) {
+        val entity = RoadRequestMapper.toEntity(
+            request.copy(updatedAt = Clock.System.now())
+        )
+        dao.insert(entity)
+    }
 }

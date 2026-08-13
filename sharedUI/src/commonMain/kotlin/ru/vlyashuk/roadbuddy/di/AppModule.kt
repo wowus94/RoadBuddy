@@ -12,8 +12,10 @@ import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
 import ru.vlyashuk.roadbuddy.presentation.create.CreateViewModel
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
+import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 
 val appModule = module {
@@ -29,11 +31,15 @@ val appModule = module {
     factoryOf(::GetRequestsUseCase)
     factoryOf(::CreateRequestUseCase)
     factoryOf(::GetRequestByIdUseCase)
+    factoryOf(::UpdateRequestUseCase)
 
     // ViewModel
     viewModelOf(::HomeViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
         DetailsViewModel(get(), requestId)
+    }
+    viewModel { (requestId: String) ->
+        EditViewModel(get(), get(), requestId)
     }
 }

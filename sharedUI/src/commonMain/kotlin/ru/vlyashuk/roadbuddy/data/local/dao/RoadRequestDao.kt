@@ -14,7 +14,7 @@ interface RoadRequestDao {
     fun getAll(): Flow<List<RoadRequestEntity>>
 
     @Query("SELECT * FROM road_requests WHERE id = :id LIMIT 1")
-    suspend fun getById(id: String): RoadRequestEntity?
+    fun getById(id: String): Flow<RoadRequestEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(request: RoadRequestEntity)

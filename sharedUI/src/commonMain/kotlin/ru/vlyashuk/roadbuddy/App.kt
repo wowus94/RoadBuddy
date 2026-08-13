@@ -24,6 +24,7 @@ import org.koin.dsl.koinConfiguration
 import ru.vlyashuk.roadbuddy.di.appModule
 import ru.vlyashuk.roadbuddy.presentation.create.CreateScreen
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
+import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.theme.AppTheme
@@ -73,6 +74,13 @@ fun App(
                         }
                         entry<Route.Details> { key ->
                             DetailsScreen(
+                                requestId = key.requestId,
+                                onBack = { backStack.removeLastOrNull() },
+                                onNavigateToEdit = { id -> backStack.add(Route.Edit(id)) }
+                            )
+                        }
+                        entry<Route.Edit> { key ->
+                            EditScreen(
                                 requestId = key.requestId,
                                 onBack = { backStack.removeLastOrNull() }
                             )
