@@ -20,6 +20,9 @@ sqlite = "2.7.0"
 ksp = "2.3.11"
 materialKolor = "5.0.0"
 koin = "4.2.2"
+googleServices = "4.5.0"
+gitliveFirebase = "2.6.0"
+firebaseBom = "34.17.0"
 
 [libraries]
 
@@ -64,6 +67,8 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
+gitlive-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitliveFirebase" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 
 [plugins]
 
@@ -75,3 +80,4 @@ android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

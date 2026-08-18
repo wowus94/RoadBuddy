@@ -26,6 +26,7 @@ import ru.vlyashuk.roadbuddy.presentation.create.CreateScreen
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
+import ru.vlyashuk.roadbuddy.presentation.login.LoginScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.theme.AppTheme
 
@@ -50,7 +51,7 @@ fun App(
         AppTheme(
             onThemeChanged
         ) {
-            val backStack = rememberNavBackStack(navConfig, Route.Home)
+            val backStack = rememberNavBackStack(navConfig, Route.Login)
 
             Surface(
                 modifier = Modifier
@@ -66,10 +67,22 @@ fun App(
                         rememberViewModelStoreNavEntryDecorator()
                     ),
                     entryProvider = entryProvider {
+                        entry<Route.Login> {
+                            LoginScreen(
+                                onAuthSuccess = {
+                                    backStack.removeLastOrNull()
+                                    backStack.add(Route.Home)
+                                }
+                            )
+                        }
                         entry<Route.Home> {
                             HomeScreen(
                                 onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
-                                onNavigateToCreate = { backStack.add(Route.Create) }
+                                onNavigateToCreate = { backStack.add(Route.Create) },
+                                onSignOut = {
+                                    backStack.removeLastOrNull()
+                                    backStack.add(Route.Login)
+                                }
                             )
                         }
                         entry<Route.Details> { key ->

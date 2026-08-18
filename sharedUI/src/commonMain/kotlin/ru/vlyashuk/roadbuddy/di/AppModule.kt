@@ -7,6 +7,8 @@ import org.koin.dsl.module
 import ru.vlyashuk.roadbuddy.data.local.database.AppDatabase
 import ru.vlyashuk.roadbuddy.data.local.database.getDatabaseBuilder
 import ru.vlyashuk.roadbuddy.data.local.database.getRoomDatabase
+import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
+import ru.vlyashuk.roadbuddy.data.remote.auth.AuthServiceImpl
 import ru.vlyashuk.roadbuddy.data.repository.RoadRequestRepositoryImpl
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
@@ -17,8 +19,12 @@ import ru.vlyashuk.roadbuddy.presentation.create.CreateViewModel
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
 import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
+import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
 
 val appModule = module {
+
+    // AuthService
+    single<AuthService> { AuthServiceImpl() }
 
     // Room
     single<AppDatabase> { getRoomDatabase(getDatabaseBuilder()) }
@@ -34,6 +40,7 @@ val appModule = module {
     factoryOf(::UpdateRequestUseCase)
 
     // ViewModel
+    viewModelOf(::LoginViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
