@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.gitlive.firebase.auth)
+            implementation(libs.gitlive.firebase.firestore)
         }
 
         commonTest.dependencies {

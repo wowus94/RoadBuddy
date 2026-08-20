@@ -9,6 +9,7 @@ import ru.vlyashuk.roadbuddy.data.local.database.getDatabaseBuilder
 import ru.vlyashuk.roadbuddy.data.local.database.getRoomDatabase
 import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
 import ru.vlyashuk.roadbuddy.data.remote.auth.AuthServiceImpl
+import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.data.repository.RoadRequestRepositoryImpl
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
@@ -23,6 +24,9 @@ import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
 
 val appModule = module {
 
+    // Firestore
+    single { RoadRequestRemoteDataSource() }
+
     // AuthService
     single<AuthService> { AuthServiceImpl() }
 
@@ -31,7 +35,7 @@ val appModule = module {
     single { get<AppDatabase>().roadRequestDao() }
 
     // Repository
-    single<RoadRequestRepository> { RoadRequestRepositoryImpl(get()) }
+    single<RoadRequestRepository> { RoadRequestRepositoryImpl(get(), get()) }
 
     // UseCase
     factoryOf(::GetRequestsUseCase)
