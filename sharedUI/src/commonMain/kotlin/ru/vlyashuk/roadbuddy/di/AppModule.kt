@@ -35,8 +35,9 @@ val appModule = module {
     single { get<AppDatabase>().roadRequestDao() }
 
     // Repository
-    single<RoadRequestRepository> { RoadRequestRepositoryImpl(get(), get()) }
-
+    single<RoadRequestRepository> {
+        RoadRequestRepositoryImpl(get(), get(), get())
+    }
     // UseCase
     factoryOf(::GetRequestsUseCase)
     factoryOf(::CreateRequestUseCase)
@@ -48,7 +49,7 @@ val appModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
-        DetailsViewModel(get(), requestId)
+        DetailsViewModel(get(), get(), requestId)
     }
     viewModel { (requestId: String) ->
         EditViewModel(get(), get(), requestId)

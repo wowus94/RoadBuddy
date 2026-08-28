@@ -2,6 +2,7 @@ package ru.vlyashuk.roadbuddy.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,7 @@ sealed interface AuthUiState {
     data class User(val user: AuthUser?) : AuthUiState
 }
 
+@OptIn(InternalCoroutinesApi::class)
 class HomeViewModel(
     private val getRequestsUseCase: GetRequestsUseCase,
     private val authService: AuthService

@@ -49,13 +49,15 @@ fun DetailsScreen(
                     )
                 },
                 actions = {
-                    Text(
-                        text = "Edit",
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .clickable { onNavigateToEdit(requestId) },
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    if (state.isOwner) {
+                        Text(
+                            text = "Edit",
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .clickable { onNavigateToEdit(requestId) },
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 }
             )
         }

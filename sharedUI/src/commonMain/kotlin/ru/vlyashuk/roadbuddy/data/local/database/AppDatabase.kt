@@ -7,10 +7,7 @@ import androidx.room.RoomDatabaseConstructor
 import ru.vlyashuk.roadbuddy.data.local.dao.RoadRequestDao
 import ru.vlyashuk.roadbuddy.data.local.entity.RoadRequestEntity
 
-@Database(
-    entities = [RoadRequestEntity::class],
-    version = 1
-)
+@Database(entities = [RoadRequestEntity::class], version = 2)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun roadRequestDao(): RoadRequestDao

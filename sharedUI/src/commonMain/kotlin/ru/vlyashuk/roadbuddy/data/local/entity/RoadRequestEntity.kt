@@ -11,6 +11,7 @@ data class RoadRequestEntity(
     val type: String,
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val authorId: String = "",
     val authorName: String = "",
     val contact: String = "",
     val status: String,
