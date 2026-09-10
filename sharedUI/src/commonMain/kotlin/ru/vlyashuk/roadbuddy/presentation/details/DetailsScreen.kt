@@ -25,6 +25,7 @@ import org.koin.core.parameter.parametersOf
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.utils.DateTimeConverter
+import ru.vlyashuk.roadbuddy.utils.rememberOpenMapAction
 
 @Composable
 fun DetailsScreen(
@@ -96,6 +97,9 @@ private fun RequestDetails(
     request: RoadRequest,
     modifier: Modifier = Modifier
 ) {
+
+    val openMap = rememberOpenMapAction()
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -114,7 +118,11 @@ private fun RequestDetails(
 
         request.latitude?.let { lat ->
             request.longitude?.let { lon ->
-                DetailItem(label = "Location", value = "$lat, $lon")
+                DetailItem(
+                    label = "Location",
+                    value = "$lat, $lon",
+                    modifier = Modifier.clickable { openMap(lat, lon, request.title) }
+                )
             }
         }
 
@@ -149,9 +157,10 @@ private fun StatusBadge(status: RequestStatus) {
 @Composable
 private fun DetailItem(
     label: String,
-    value: String
+    value: String,
+    modifier: Modifier = Modifier
 ) {
-    Column {
+    Column(modifier = modifier) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,

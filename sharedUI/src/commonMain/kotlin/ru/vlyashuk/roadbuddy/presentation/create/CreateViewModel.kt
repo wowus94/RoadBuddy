@@ -17,6 +17,8 @@ data class CreateUiState(
     val type: RequestType = RequestType.OTHER,
     val authorName: String = "",
     val contact: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
     val error: String? = null
@@ -52,7 +54,9 @@ class CreateViewModel(
                 description = state.description,
                 type = state.type,
                 authorName = state.authorName,
-                contact = state.contact
+                contact = state.contact,
+                latitude = state.latitude,
+                longitude = state.longitude
             )
 
             createRequestUseCase(request)
@@ -63,5 +67,9 @@ class CreateViewModel(
                     _uiState.update { it.copy(isSaving = false, error = e.message) }
                 }
         }
+    }
+
+    fun onLocationSelected(lat: Double, lon: Double) {
+        _uiState.update { it.copy(latitude = lat, longitude = lon) }
     }
 }

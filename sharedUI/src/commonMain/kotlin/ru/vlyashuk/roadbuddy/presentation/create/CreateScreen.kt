@@ -56,6 +56,9 @@ fun CreateScreen(
             onAuthorNameChange = viewModel::onAuthorNameChanged,
             onContactChange = viewModel::onContactChanged,
             onSubmit = viewModel::createRequest,
+            latitude = state.latitude,
+            longitude = state.longitude,
+            onLocationSelected = viewModel::onLocationSelected,
             modifier = Modifier.padding(padding)
         )
     }

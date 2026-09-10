@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -37,6 +38,9 @@ fun RequestForm(
     onAuthorNameChange: (String) -> Unit,
     onContactChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    latitude: Double? = null,
+    longitude: Double? = null,
+    onLocationSelected: (Double, Double) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -95,6 +99,15 @@ fun RequestForm(
                 color = MaterialTheme.colorScheme.error
             )
         }
+
+        Text("Coordinates", style = MaterialTheme.typography.labelLarge)
+
+        MapPicker(
+            latitude = latitude,
+            longitude = longitude,
+            onLocationSelected = onLocationSelected,
+            modifier = Modifier.fillMaxWidth().height(240.dp)
+        )
 
         Button(
             onClick = onSubmit,
