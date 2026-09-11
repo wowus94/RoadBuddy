@@ -85,6 +85,7 @@ kotlin {
                 framework {
                     baseName = "SharedUI"
                     isStatic = true
+                    linkerOpts("-framework", "MapKit")
                 }
             }
         }
