@@ -15,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,16 +27,9 @@ import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     onNavigateToDetails: (String) -> Unit = {},
-    onNavigateToCreate: () -> Unit = {},
-    onSignOut: () -> Unit = {}
+    onNavigateToCreate: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
-    val authState by viewModel.authState.collectAsState()
-
-    LaunchedEffect(authState) {
-        if (authState is AuthUiState.User && (authState as AuthUiState.User).user == null) onSignOut()
-    }
-
 
     Scaffold(
         topBar = {

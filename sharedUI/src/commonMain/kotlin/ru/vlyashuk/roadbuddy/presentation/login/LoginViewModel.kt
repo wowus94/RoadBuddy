@@ -19,13 +19,6 @@ class LoginViewModel(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    val currentUser: StateFlow<AuthUser?> =
-        authService.currentUser.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            null
-        )
-
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email) }
     }

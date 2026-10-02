@@ -21,6 +21,7 @@ import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
 import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
+import ru.vlyashuk.roadbuddy.presentation.session.SessionViewModel
 
 val appModule = module {
 
@@ -45,6 +46,7 @@ val appModule = module {
     factoryOf(::UpdateRequestUseCase)
 
     // ViewModel
+    viewModelOf(::SessionViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::CreateViewModel)

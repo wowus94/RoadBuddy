@@ -22,7 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,16 +41,10 @@ import ru.vlyashuk.roadbuddy.theme.GreenMain
 
 @Composable
 fun LoginScreen(
-    onAuthSuccess: () -> Unit = {},
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-    val currentUser by viewModel.currentUser.collectAsState()
     val focusManager = LocalFocusManager.current
-
-    LaunchedEffect(currentUser) {
-        if (currentUser != null) onAuthSuccess()
-    }
 
     Scaffold { padding ->
         Column(

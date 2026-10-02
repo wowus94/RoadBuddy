@@ -10,6 +10,7 @@ import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import kotlin.random.Random
 import kotlin.time.Clock
+import kotlin.uuid.Uuid
 
 class RoadRequestRepositoryImpl(
     private val dao: RoadRequestDao,
@@ -23,7 +24,9 @@ class RoadRequestRepositoryImpl(
         val currentUid = authService.currentUser.first()?.uid
             ?: error("User not authenticated")
 
-        val newId = request.id.ifBlank { Random.nextInt(10000, 99999).toString() }
+        val newId = request.id.ifBlank {
+            Uuid.random().toString()
+        }
         val now = Clock.System.now()
         val toSave = request.copy(
             id = newId,
