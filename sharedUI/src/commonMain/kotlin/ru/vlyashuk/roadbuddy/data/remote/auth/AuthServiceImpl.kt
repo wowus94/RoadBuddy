@@ -6,6 +6,9 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.flow.map
+import ru.vlyashuk.roadbuddy.data.error.UnauthorizedException
+import ru.vlyashuk.roadbuddy.data.error.safeCall
+import ru.vlyashuk.roadbuddy.domain.error.AppResult
 
 class AuthServiceImpl : AuthService {
 
@@ -14,17 +17,17 @@ class AuthServiceImpl : AuthService {
     override val currentUser: Flow<AuthUser?> =
         auth.authStateChanged.map { user -> user?.toDomain() }
 
-    override suspend fun signUp(email: String, password: String): Result<AuthUser> = runCatching {
+    override suspend fun signUp(email: String, password: String): AppResult<AuthUser> = safeCall {
         val result = auth.createUserWithEmailAndPassword(email = email, password = password)
-        result.user?.toDomain() ?: error("No user returned")
+        result.user?.toDomain() ?: throw UnauthorizedException()
     }
 
-    override suspend fun signIn(email: String, password: String): Result<AuthUser> = runCatching {
+    override suspend fun signIn(email: String, password: String): AppResult<AuthUser> = safeCall {
         val result = auth.signInWithEmailAndPassword(email = email, password = password)
-        result.user?.toDomain() ?: error("No user returned")
+        result.user?.toDomain() ?: throw UnauthorizedException()
     }
 
-    override suspend fun signOut() {
+    override suspend fun signOut(): AppResult<Unit> = safeCall {
         auth.signOut()
     }
 }

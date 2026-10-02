@@ -6,7 +6,5 @@ import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 class UpdateRequestUseCase(
     private val repository: RoadRequestRepository
 ) {
-    suspend operator fun invoke(request: RoadRequest) = runCatching {
-        repository.updateRequest(request)
-    }
+    suspend operator fun invoke(request: RoadRequest) = repository.updateRequest(request)
 }

@@ -7,9 +7,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.vlyashuk.roadbuddy.domain.error.AppError
+import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
+import ru.vlyashuk.roadbuddy.presentation.error.toMessage
 
 data class CreateUiState(
     val title: String = "",
@@ -44,7 +47,7 @@ class CreateViewModel(
         viewModelScope.launch {
             val state = _uiState.value
             if (!state.isValid) {
-                _uiState.update { it.copy(error = "Fill all required fields") }
+                _uiState.update { it.copy(error = AppError.Validation.toMessage()) }
                 return@launch
             }
             _uiState.update { it.copy(isSaving = true, error = null) }
@@ -59,13 +62,16 @@ class CreateViewModel(
                 longitude = state.longitude
             )
 
-            createRequestUseCase(request)
-                .onSuccess {
+            when (val result = createRequestUseCase(request)) {
+                is AppResult.Success -> {
                     _uiState.update { it.copy(isSaved = true, isSaving = false) }
                 }
-                .onFailure { e ->
-                    _uiState.update { it.copy(isSaving = false, error = e.message) }
+                is AppResult.Failure -> {
+                    _uiState.update {
+                        it.copy(isSaving = false, error = result.error.toMessage())
+                    }
                 }
+            }
         }
     }
 
