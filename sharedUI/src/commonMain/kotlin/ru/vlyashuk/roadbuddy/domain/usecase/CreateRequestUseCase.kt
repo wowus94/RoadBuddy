@@ -7,8 +7,5 @@ class CreateRequestUseCase(
     private val repository: RoadRequestRepository
 ) {
 
-    suspend operator fun invoke(request: RoadRequest): Result<Unit> =
-        runCatching {
-            repository.createRequest(request)
-        }
+    suspend operator fun invoke(request: RoadRequest) = repository.createRequest(request)
 }
