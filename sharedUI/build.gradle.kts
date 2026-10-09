@@ -19,6 +19,7 @@ kotlin {
         minSdk = 24
         androidResources.enable = true
         compilerOptions { jvmTarget = JvmTarget.JVM_17 }
+        withHostTest {  }
     }
 
     iosArm64()
