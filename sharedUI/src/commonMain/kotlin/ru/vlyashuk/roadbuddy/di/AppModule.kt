@@ -9,6 +9,7 @@ import ru.vlyashuk.roadbuddy.data.local.database.getDatabaseBuilder
 import ru.vlyashuk.roadbuddy.data.local.database.getRoomDatabase
 import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
 import ru.vlyashuk.roadbuddy.data.remote.auth.AuthServiceImpl
+import ru.vlyashuk.roadbuddy.data.remote.firestore.FirestoreRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.data.repository.RoadRequestRepositoryImpl
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
@@ -26,7 +27,7 @@ import ru.vlyashuk.roadbuddy.presentation.session.SessionViewModel
 val appModule = module {
 
     // Firestore
-    single { RoadRequestRemoteDataSource() }
+    single<RoadRequestRemoteDataSource> { FirestoreRequestRemoteDataSource() }
 
     // AuthService
     single<AuthService> { AuthServiceImpl() }
