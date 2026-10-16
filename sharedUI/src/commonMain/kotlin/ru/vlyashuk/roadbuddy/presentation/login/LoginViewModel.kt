@@ -9,22 +9,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
 import ru.vlyashuk.roadbuddy.domain.model.AuthUser
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignInUseCase
 
 class LoginViewModel(
-    private val authService: AuthService
+    private val signInUseCase: SignInUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     val currentUser: StateFlow<AuthUser?> =
-        authService.currentUser.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            null
-        )
+        getCurrentUserUseCase()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                null
+            )
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email) }
@@ -34,14 +37,11 @@ class LoginViewModel(
         _uiState.update { it.copy(password = password) }
     }
 
-    fun signIn() = auth { authService.signIn(it.email, it.password) }
-    fun signUp() = auth { authService.signUp(it.email, it.password) }
-
-    private fun auth(block: suspend (LoginUiState) -> Result<AuthUser>) {
+    fun signIn() {
+        val state = _uiState.value
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val result = block(_uiState.value)
-            result
+            signInUseCase(state.email, state.password)
                 .onSuccess {
                     _uiState.update { it.copy(isLoading = false) }
                 }

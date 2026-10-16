@@ -28,6 +28,7 @@ import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.login.LoginScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
+import ru.vlyashuk.roadbuddy.presentation.register.RegisterScreen
 import ru.vlyashuk.roadbuddy.theme.AppTheme
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -72,7 +73,16 @@ fun App(
                                 onAuthSuccess = {
                                     backStack.removeLastOrNull()
                                     backStack.add(Route.Home)
+                                },
+                                onNavigateToRegister = {
+                                    backStack.add(Route.Register)
                                 }
+                            )
+                        }
+                        entry<Route.Register> {
+                            RegisterScreen(
+                                onAuthSuccess = { backStack.removeLastOrNull() },
+                                onNavigateToLogin = { backStack.add(Route.Login) }
                             )
                         }
                         entry<Route.Home> {

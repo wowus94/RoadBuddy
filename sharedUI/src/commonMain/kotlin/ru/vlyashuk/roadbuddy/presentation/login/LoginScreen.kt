@@ -43,6 +43,7 @@ import ru.vlyashuk.roadbuddy.theme.GreenMain
 @Composable
 fun LoginScreen(
     onAuthSuccess: () -> Unit = {},
+    onNavigateToRegister: () -> Unit = {},
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -148,7 +149,7 @@ fun LoginScreen(
             }
 
             TextButton(
-                onClick = viewModel::signUp,
+                onClick = onNavigateToRegister,
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     contentColor = GreenMain,

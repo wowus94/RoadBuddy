@@ -13,10 +13,11 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
 import ru.vlyashuk.roadbuddy.domain.model.AuthUser
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignOutUseCase
 
 data class HomeUiState(
     val requests: List<RoadRequest> = emptyList(),
@@ -32,14 +33,15 @@ sealed interface AuthUiState {
 @OptIn(InternalCoroutinesApi::class)
 class HomeViewModel(
     private val getRequestsUseCase: GetRequestsUseCase,
-    private val authService: AuthService
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     val authState: StateFlow<AuthUiState> =
-        authService.currentUser
+        getCurrentUserUseCase()
             .map { AuthUiState.User(it) }
             .stateIn(
                 viewModelScope,
@@ -64,7 +66,7 @@ class HomeViewModel(
 
     fun signOut() {
         viewModelScope.launch {
-            authService.signOut()
+            signOutUseCase()
         }
     }
 }

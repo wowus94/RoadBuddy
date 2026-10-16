@@ -4,23 +4,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import ru.vlyashuk.roadbuddy.data.local.dao.RoadRequestDao
 import ru.vlyashuk.roadbuddy.data.local.mapper.RoadRequestMapper
-import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import kotlin.random.Random
 import kotlin.time.Clock
 
 class RoadRequestRepositoryImpl(
     private val dao: RoadRequestDao,
     private val remote: RoadRequestRemoteDataSource,
-    private val authService: AuthService
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : RoadRequestRepository {
 
     override fun getRequests(): Flow<List<RoadRequest>> = remote.getRequests()
 
     override suspend fun createRequest(request: RoadRequest) {
-        val currentUid = authService.currentUser.first()?.uid
+        val currentUid = getCurrentUserUseCase().first()?.uid
             ?: error("User not authenticated")
 
         val newId = request.id.ifBlank { Random.nextInt(10000, 99999).toString() }
@@ -38,7 +38,7 @@ class RoadRequestRepositoryImpl(
     override fun getRequest(id: String): Flow<RoadRequest?> = remote.getRequest(id)
 
     override suspend fun updateRequest(request: RoadRequest) {
-        val currentUid = authService.currentUser.first()?.uid
+        val currentUid = getCurrentUserUseCase().first()?.uid
             ?: error("User not authenticated")
 
         if (request.authorId.isNotBlank() && request.authorId != currentUid) {

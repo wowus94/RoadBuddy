@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import kotlin.coroutines.cancellation.CancellationException
 
 data class DetailsUiState(
@@ -22,7 +22,7 @@ data class DetailsUiState(
 
 class DetailsViewModel(
     private val getRequestByIdUseCase: GetRequestByIdUseCase,
-    private val authService: AuthService,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val requestId: String
 ) : ViewModel() {
 
@@ -34,7 +34,7 @@ class DetailsViewModel(
             try {
                 combine(
                     getRequestByIdUseCase(requestId),
-                    authService.currentUser
+                    getCurrentUserUseCase()
                 ) { request, user ->
                     DetailsUiState(
                         request = request,
