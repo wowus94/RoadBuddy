@@ -8,12 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
-import ru.vlyashuk.roadbuddy.domain.error.AppError
-import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
-import ru.vlyashuk.roadbuddy.presentation.error.toMessage
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import kotlin.coroutines.cancellation.CancellationException
 
 data class DetailsUiState(
@@ -25,7 +22,7 @@ data class DetailsUiState(
 
 class DetailsViewModel(
     private val getRequestByIdUseCase: GetRequestByIdUseCase,
-    private val authService: AuthService,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val requestId: String
 ) : ViewModel() {
 
@@ -37,31 +34,20 @@ class DetailsViewModel(
             try {
                 combine(
                     getRequestByIdUseCase(requestId),
-                    authService.currentUser
-                ) { result, user ->
-                    when (result) {
-                        is AppResult.Failure -> DetailsUiState(
-                            isLoading = false,
-                            error = result.error.toMessage()
-                        )
-                        is AppResult.Success -> {
-                            val request = result.value
-                            DetailsUiState(
-                                request = request,
-                                isLoading = false,
-                                isOwner = request != null && user != null && request.authorId == user.uid,
-                                error = if (request == null) AppError.NotFound.toMessage() else null
-                            )
-                        }
-                    }
+                    getCurrentUserUseCase()
+                ) { request, user ->
+                    DetailsUiState(
+                        request = request,
+                        isLoading = false,
+                        isOwner = request != null && user != null && request.authorId == user.uid,
+                        error = if (request == null) "Request not found" else null
+                    )
                 }.collect { state ->
                     _uiState.value = state
                 }
             } catch (e: Throwable) {
                 if (e is CancellationException) throw e
-                _uiState.update {
-                    it.copy(isLoading = false, error = AppError.Unknown.toMessage())
-                }
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
     }
