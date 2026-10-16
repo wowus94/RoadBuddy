@@ -71,8 +71,10 @@ fun App(
                         entry<Route.Login> {
                             LoginScreen(
                                 onAuthSuccess = {
-                                    backStack.removeLastOrNull()
-                                    backStack.add(Route.Home)
+                                    with(backStack) {
+                                        clear()
+                                        add(Route.Home)
+                                    }
                                 },
                                 onNavigateToRegister = {
                                     backStack.add(Route.Register)
@@ -81,8 +83,13 @@ fun App(
                         }
                         entry<Route.Register> {
                             RegisterScreen(
-                                onAuthSuccess = { backStack.removeLastOrNull() },
-                                onNavigateToLogin = { backStack.add(Route.Login) }
+                                onAuthSuccess = {
+                                    with(backStack) {
+                                        clear()
+                                        add(Route.Home)
+                                    }
+                                },
+                                onNavigateToLogin = { backStack.removeLastOrNull() }
                             )
                         }
                         entry<Route.Home> {
