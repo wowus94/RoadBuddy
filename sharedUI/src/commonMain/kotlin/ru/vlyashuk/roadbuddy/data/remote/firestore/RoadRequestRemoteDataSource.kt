@@ -6,29 +6,37 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 
-class RoadRequestRemoteDataSource {
+interface RoadRequestRemoteDataSource {
+    fun getRequests(): Flow<List<RoadRequest>>
+    fun getRequest(id: String): Flow<RoadRequest?>
+    suspend fun createRequest(request: RoadRequest)
+    suspend fun updateRequest(request: RoadRequest)
+    suspend fun deleteRequest(id: String)
+}
+
+class FirestoreRequestRemoteDataSource : RoadRequestRemoteDataSource {
 
     private val collection = Firebase.firestore.collection("requests")
 
-    fun getRequests(): Flow<List<RoadRequest>> =
+    override fun getRequests(): Flow<List<RoadRequest>> =
         collection.snapshots.map { snapshot ->
             snapshot.documents.map { it.data(RoadRequest.serializer()) }
         }
 
-    fun getRequest(id: String): Flow<RoadRequest?> =
+    override fun getRequest(id: String): Flow<RoadRequest?> =
         collection.document(id).snapshots.map { snapshot ->
             if (snapshot.exists) snapshot.data(RoadRequest.serializer()) else null
         }
 
-    suspend fun createRequest(request: RoadRequest) {
+    override suspend fun createRequest(request: RoadRequest) {
         collection.document(request.id).set(RoadRequest.serializer(), request)
     }
 
-    suspend fun updateRequest(request: RoadRequest) {
+    override suspend fun updateRequest(request: RoadRequest) {
         collection.document(request.id).set(RoadRequest.serializer(), request)
     }
 
-    suspend fun deleteRequest(id: String) {
+    override suspend fun deleteRequest(id: String) {
         collection.document(id).delete()
     }
 }

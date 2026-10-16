@@ -18,7 +18,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 24
         targetSdk = 37
 
         applicationId = "ru.vlyashuk.roadbuddy.androidApp"

@@ -39,7 +39,7 @@ actual fun MapPicker(
                 val point = sender.locationInView(mapView)
                 val coordinate = mapView.convertPoint(point, toCoordinateFromView = mapView)
                 coordinate.useContents {
-                    onLocationSelected(latitude ?: DEFAULT_LAT, longitude ?: DEFAULT_LON)
+                    onLocationSelected(this.latitude, this.longitude)
                 }
             }
         }
@@ -54,7 +54,7 @@ actual fun MapPicker(
     }
 
     LaunchedEffect(latitude, longitude) {
-        mapView.annotations?.let { mapView.removeAnnotations(it) }
+        mapView.annotations.let { mapView.removeAnnotations(it) }
 
         val centerLat = latitude ?: DEFAULT_LAT
         val centerLon = longitude ?: DEFAULT_LON

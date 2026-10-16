@@ -16,9 +16,10 @@ kotlin {
     android {
         namespace = "ru.vlyashuk.roadbuddy"
         compileSdk = 37
-        minSdk = 23
+        minSdk = 24
         androidResources.enable = true
         compilerOptions { jvmTarget = JvmTarget.JVM_17 }
+        withHostTest {  }
     }
 
     iosArm64()
