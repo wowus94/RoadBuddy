@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -19,6 +22,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.KoinApplication
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.koinConfiguration
 import ru.vlyashuk.roadbuddy.di.appModule
@@ -29,6 +33,9 @@ import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.login.LoginScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.presentation.register.RegisterScreen
+import ru.vlyashuk.roadbuddy.presentation.session.SessionState
+import ru.vlyashuk.roadbuddy.presentation.session.SessionViewModel
+import ru.vlyashuk.roadbuddy.presentation.session.SplashScreen
 import ru.vlyashuk.roadbuddy.theme.AppTheme
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -52,7 +59,26 @@ fun App(
         AppTheme(
             onThemeChanged
         ) {
-            val backStack = rememberNavBackStack(navConfig, Route.Login)
+            val backStack = rememberNavBackStack(navConfig, Route.Splash)
+
+            val sessionViewModel: SessionViewModel = koinViewModel()
+            val sessionState by sessionViewModel.state.collectAsState()
+
+            LaunchedEffect(sessionState) {
+                when (sessionState) {
+                    SessionState.Unauthenticated -> {
+                        backStack.clear()
+                        backStack.add(Route.Login)
+                    }
+
+                    is SessionState.Authenticated -> {
+                        backStack.clear()
+                        backStack.add(Route.Home)
+                    }
+
+                    SessionState.Loading -> Unit
+                }
+            }
 
             Surface(
                 modifier = Modifier
@@ -68,6 +94,9 @@ fun App(
                         rememberViewModelStoreNavEntryDecorator()
                     ),
                     entryProvider = entryProvider {
+                        entry<Route.Splash> {
+                            SplashScreen()
+                        }
                         entry<Route.Login> {
                             LoginScreen(
                                 onAuthSuccess = {
@@ -95,11 +124,7 @@ fun App(
                         entry<Route.Home> {
                             HomeScreen(
                                 onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
-                                onNavigateToCreate = { backStack.add(Route.Create) },
-                                onSignOut = {
-                                    backStack.removeLastOrNull()
-                                    backStack.add(Route.Login)
-                                }
+                                onNavigateToCreate = { backStack.add(Route.Create) }
                             )
                         }
                         entry<Route.Details> { key ->

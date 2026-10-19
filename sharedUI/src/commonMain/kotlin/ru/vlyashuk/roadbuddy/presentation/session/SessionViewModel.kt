@@ -6,14 +6,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import ru.vlyashuk.roadbuddy.data.remote.auth.AuthService
+import ru.vlyashuk.roadbuddy.data.remote.auth.RemoteAuthDataSource
 
 class SessionViewModel(
-    authService: AuthService
+    authService: RemoteAuthDataSource
 ) : ViewModel() {
 
     val state: StateFlow<SessionState> =
-        authService.currentUser
+        authService.observeCurrentUser()
             .map { user ->
                 if (user == null) {
                     SessionState.Unauthenticated

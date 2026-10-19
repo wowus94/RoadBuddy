@@ -8,6 +8,7 @@ import ru.vlyashuk.roadbuddy.data.local.database.AppDatabase
 import ru.vlyashuk.roadbuddy.data.local.database.getDatabaseBuilder
 import ru.vlyashuk.roadbuddy.data.local.database.getRoomDatabase
 import ru.vlyashuk.roadbuddy.data.remote.auth.RemoteAuthDataSource
+import ru.vlyashuk.roadbuddy.data.remote.firestore.FirestoreRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.data.repository.AuthRepositoryImpl
 import ru.vlyashuk.roadbuddy.data.repository.RoadRequestRepositoryImpl
@@ -27,12 +28,12 @@ import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
 import ru.vlyashuk.roadbuddy.presentation.register.RegisterViewModel
+import ru.vlyashuk.roadbuddy.presentation.session.SessionViewModel
 
 val appModule = module {
 
     // Firestore
-    single { RoadRequestRemoteDataSource() }
-
+    single<RoadRequestRemoteDataSource> { FirestoreRequestRemoteDataSource() }
     // Room
     single<AppDatabase> { getRoomDatabase(getDatabaseBuilder()) }
     single { get<AppDatabase>().roadRequestDao() }
@@ -55,6 +56,7 @@ val appModule = module {
     factoryOf(::GetCurrentUserUseCase)
 
     // ViewModel
+    viewModelOf(::SessionViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::HomeViewModel)

@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
+import ru.vlyashuk.roadbuddy.presentation.error.toMessage
 import kotlin.coroutines.cancellation.CancellationException
 
 data class DetailsUiState(
@@ -35,13 +37,21 @@ class DetailsViewModel(
                 combine(
                     getRequestByIdUseCase(requestId),
                     getCurrentUserUseCase()
-                ) { request, user ->
-                    DetailsUiState(
-                        request = request,
-                        isLoading = false,
-                        isOwner = request != null && user != null && request.authorId == user.uid,
-                        error = if (request == null) "Request not found" else null
-                    )
+                ) { result, user ->
+                    when (result) {
+                        is AppResult.Success -> {
+                            val request = result.value
+                            DetailsUiState(
+                                request = request,
+                                isLoading = false,
+                                isOwner = request != null && user != null && request.authorId == user.uid,
+                                error = if (request == null) "Request not found" else null
+                            )
+                        }
+                        is AppResult.Failure -> {
+                            DetailsUiState(isLoading = false, error = result.error.toMessage())
+                        }
+                    }
                 }.collect { state ->
                     _uiState.value = state
                 }
