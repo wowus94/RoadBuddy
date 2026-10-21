@@ -80,12 +80,18 @@ fun RegisterScreen(
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
                 label = { Text("Email") },
+                isError = state.emailError != null,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = GreenMain,
                     focusedLabelColor = GreenMain
                 ),
+                supportingText = {
+                    state.emailError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -98,6 +104,7 @@ fun RegisterScreen(
                 value = state.password,
                 onValueChange = viewModel::onPasswordChange,
                 label = { Text("Password") },
+                isError = state.passwordError != null,
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -105,6 +112,11 @@ fun RegisterScreen(
                     focusedBorderColor = GreenMain,
                     focusedLabelColor = GreenMain
                 ),
+                supportingText = {
+                    state.passwordError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -118,12 +130,18 @@ fun RegisterScreen(
                 onValueChange = viewModel::onConfirmPasswordChange,
                 label = { Text("Confirm password") },
                 singleLine = true,
+                isError = state.confirmPasswordError != null,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = GreenMain,
                     focusedLabelColor = GreenMain
                 ),
+                supportingText = {
+                    state.confirmPasswordError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {

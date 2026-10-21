@@ -79,12 +79,18 @@ fun LoginScreen(
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
                 label = { Text("Email") },
+                isError = state.emailError != null,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = GreenMain,
                     focusedLabelColor = GreenMain
                 ),
+                supportingText = {
+                    state.emailError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next
                 ),
@@ -101,6 +107,7 @@ fun LoginScreen(
                 value = state.password,
                 onValueChange = viewModel::onPasswordChange,
                 label = { Text("Password") },
+                isError = state.passwordError != null,
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -108,6 +115,11 @@ fun LoginScreen(
                     focusedBorderColor = GreenMain,
                     focusedLabelColor = GreenMain
                 ),
+                supportingText = {
+                    state.passwordError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 ),
@@ -123,7 +135,7 @@ fun LoginScreen(
 
             TextButton(
                 onClick = viewModel::resetPassword,
-                enabled = !state.isLoading && state.email.isNotBlank()
+                enabled = !state.isLoading
             ) {
                 Text("Forgot password?")
             }
