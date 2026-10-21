@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.vlyashuk.roadbuddy.domain.model.AuthUser
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.ResetPasswordUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignInUseCase
 
 class LoginViewModel(
     private val signInUseCase: SignInUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val resetPasswordUseCase: ResetPasswordUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -44,6 +46,20 @@ class LoginViewModel(
             signInUseCase(state.email, state.password)
                 .onSuccess {
                     _uiState.update { it.copy(isLoading = false) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+        }
+    }
+
+    fun resetPassword() {
+        val email = _uiState.value.email
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            resetPasswordUseCase(email)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, resetEmailSent = true) }
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
