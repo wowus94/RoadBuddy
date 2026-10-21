@@ -13,6 +13,7 @@ import ru.vlyashuk.roadbuddy.domain.model.AuthUser
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.ResetPasswordUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignInUseCase
+import ru.vlyashuk.roadbuddy.domain.validation.AuthValidators
 
 class LoginViewModel(
     private val signInUseCase: SignInUseCase,
@@ -32,15 +33,16 @@ class LoginViewModel(
             )
 
     fun onEmailChange(email: String) {
-        _uiState.update { it.copy(email = email) }
+        _uiState.update { it.copy(email = email, emailError = null) }
     }
 
     fun onPasswordChange(password: String) {
-        _uiState.update { it.copy(password = password) }
+        _uiState.update { it.copy(password = password, passwordError = null) }
     }
 
     fun signIn() {
         val state = _uiState.value
+        if (!validate(state)) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             signInUseCase(state.email, state.password)
@@ -55,6 +57,11 @@ class LoginViewModel(
 
     fun resetPassword() {
         val email = _uiState.value.email
+        val emailError = AuthValidators.emailError(email)
+        if (emailError != null) {
+            _uiState.update { it.copy(emailError = emailError) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             resetPasswordUseCase(email)
@@ -65,5 +72,18 @@ class LoginViewModel(
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
                 }
         }
+    }
+
+    private fun validate(state: LoginUiState): Boolean {
+        val emailError = AuthValidators.emailError(state.email)
+        val passwordError = AuthValidators.passwordError(state.password)
+
+        _uiState.update {
+            it.copy(
+                emailError = emailError,
+                passwordError = passwordError
+            )
+        }
+        return emailError == null && passwordError == null
     }
 }
