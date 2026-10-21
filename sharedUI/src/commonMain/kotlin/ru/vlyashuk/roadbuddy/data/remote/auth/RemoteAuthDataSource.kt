@@ -25,6 +25,10 @@ class RemoteAuthDataSource {
 
     suspend fun signOut() = auth.signOut()
 
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit> = runCatching {
+        auth.sendPasswordResetEmail(email)
+    }
+
 }
 
 private fun FirebaseUser.toDomain() = AuthUser(uid = uid, email = email)

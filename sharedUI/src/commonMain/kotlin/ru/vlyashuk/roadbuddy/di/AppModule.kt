@@ -19,6 +19,7 @@ import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.auth.ResetPasswordUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignInUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignOutUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignUpUseCase
@@ -54,6 +55,7 @@ val appModule = module {
     factoryOf(::SignUpUseCase)
     factoryOf(::SignOutUseCase)
     factoryOf(::GetCurrentUserUseCase)
+    factoryOf(::ResetPasswordUseCase)
 
     // ViewModel
     viewModelOf(::SessionViewModel)

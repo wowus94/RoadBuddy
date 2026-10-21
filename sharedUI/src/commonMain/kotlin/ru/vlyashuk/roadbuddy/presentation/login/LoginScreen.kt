@@ -119,7 +119,16 @@ fun LoginScreen(
                 )
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
+
+            TextButton(
+                onClick = viewModel::resetPassword,
+                enabled = !state.isLoading && state.email.isNotBlank()
+            ) {
+                Text("Forgot password?")
+            }
+
+            Spacer(Modifier.height(8.dp))
 
             if (state.error != null) {
                 Text(
