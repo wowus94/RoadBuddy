@@ -23,10 +23,10 @@ koin = "4.2.2"
 googleServices = "4.5.0"
 gitliveFirebase = "2.6.0"
 firebaseBom = "34.17.0"
-mapsCompose = "9.0.0"
+ya_mapkit = "4.45.0-lite"
 
 [libraries]
-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+yandex-mapkit = { module = "com.yandex.android:maps.mobile", version.ref = "ya_mapkit" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
