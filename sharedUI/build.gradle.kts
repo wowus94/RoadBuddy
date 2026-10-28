@@ -66,7 +66,7 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(libs.maps.compose)
+            implementation(libs.yandex.mapkit)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
             implementation(project.dependencies.platform(libs.firebase.bom))

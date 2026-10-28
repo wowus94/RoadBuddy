@@ -18,13 +18,13 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
 
         applicationId = "ru.vlyashuk.roadbuddy.androidApp"
         versionCode = 1
         versionName = "1.0.0"
-        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders["YANDEX_MAPKIT_API_KEY"] = localProperties.getProperty("YANDEX_MAPKIT_API_KEY") ?: ""
     }
 
     compileOptions {
