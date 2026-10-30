@@ -9,4 +9,5 @@ interface RoadRequestRepository {
     suspend fun createRequest(request: RoadRequest): AppResult<Unit>
     fun getRequest(id: String): Flow<AppResult<RoadRequest?>>
     suspend fun updateRequest(request: RoadRequest): AppResult<Unit>
+    suspend fun deleteRequest(id: String): AppResult<Unit>
 }

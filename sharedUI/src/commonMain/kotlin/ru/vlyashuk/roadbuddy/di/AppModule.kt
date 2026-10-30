@@ -15,6 +15,7 @@ import ru.vlyashuk.roadbuddy.data.repository.RoadRequestRepositoryImpl
 import ru.vlyashuk.roadbuddy.domain.repository.AuthRepository
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.DeleteRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
@@ -51,6 +52,7 @@ val appModule = module {
     factoryOf(::CreateRequestUseCase)
     factoryOf(::GetRequestByIdUseCase)
     factoryOf(::UpdateRequestUseCase)
+    factoryOf(::DeleteRequestUseCase)
     factoryOf(::SignInUseCase)
     factoryOf(::SignUpUseCase)
     factoryOf(::SignOutUseCase)
@@ -64,7 +66,7 @@ val appModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
-        DetailsViewModel(get(), get(), requestId)
+        DetailsViewModel(get(), get(), get(), get(), requestId)
     }
     viewModel { (requestId: String) ->
         EditViewModel(get(), get(), requestId)

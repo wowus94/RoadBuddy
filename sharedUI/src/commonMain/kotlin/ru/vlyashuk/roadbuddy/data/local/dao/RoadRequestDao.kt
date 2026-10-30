@@ -22,6 +22,9 @@ interface RoadRequestDao {
     @Delete
     suspend fun delete(request: RoadRequestEntity)
 
+    @Query("DELETE FROM road_requests WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     @Query("DELETE FROM road_requests")
     suspend fun deleteAll()
 }

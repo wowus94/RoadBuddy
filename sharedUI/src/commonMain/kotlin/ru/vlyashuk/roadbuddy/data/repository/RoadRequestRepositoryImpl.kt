@@ -61,4 +61,20 @@ class RoadRequestRepositoryImpl(
     } catch (e: Exception) {
         AppResult.Failure(AppError.Network)
     }
+
+    override suspend fun deleteRequest(id: String): AppResult<Unit> = try {
+        val currentUid =
+            getCurrentUserUseCase().first()?.uid ?: return AppResult.Failure(AppError.Unauthorized)
+
+        val requestResult = remote.getRequest(id).first()
+        if (requestResult != null && requestResult.authorId.isNotBlank() && requestResult.authorId != currentUid) {
+            AppResult.Failure(AppError.Forbidden)
+        } else {
+            remote.deleteRequest(id)
+            dao.deleteById(id)
+            AppResult.Success(Unit)
+        }
+    } catch (e: Exception) {
+        AppResult.Failure(AppError.Network)
+    }
 }

@@ -5,18 +5,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -35,6 +46,12 @@ fun DetailsScreen(
     viewModel: DetailsViewModel = koinViewModel(parameters = { parametersOf(requestId) })
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    if (state.isDeleted) {
+        LaunchedEffect(Unit) {
+            onBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -82,6 +99,11 @@ fun DetailsScreen(
                 )
                 else -> RequestDetails(
                     request = state.request!!,
+                    isOwner = state.isOwner,
+                    isDeleting = state.isDeleting,
+                    isCancelling = state.isCancelling,
+                    onCancelClick = viewModel::cancelRequest,
+                    onDeleteClick = viewModel::deleteRequest,
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
@@ -95,6 +117,11 @@ fun DetailsScreen(
 @Composable
 private fun RequestDetails(
     request: RoadRequest,
+    isOwner: Boolean,
+    isDeleting: Boolean,
+    isCancelling: Boolean,
+    onCancelClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -134,6 +161,79 @@ private fun RequestDetails(
             label = "Updated",
             value = DateTimeConverter.format(request.updatedAt)
         )
+
+        if (isOwner) {
+            var showDeleteDialog by remember { mutableStateOf(false) }
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Delete Request") },
+                    text = { Text("Are you sure you want to delete this request? This action cannot be undone.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDeleteDialog = false
+                                onDeleteClick()
+                            }
+                        ) {
+                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (request.status == RequestStatus.OPEN || request.status == RequestStatus.IN_PROGRESS) {
+                    Button(
+                        onClick = onCancelClick,
+                        enabled = !isCancelling && !isDeleting,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (isCancelling) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(20.dp),
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                        Text("Cancel request")
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = { showDeleteDialog = true },
+                    enabled = !isCancelling && !isDeleting,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isDeleting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(20.dp),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Text("Delete request")
+                }
+            }
+        }
     }
 }
 
