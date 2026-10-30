@@ -15,6 +15,7 @@ data class RoadRequest(
     val authorId: String = "",
     val authorName: String = "",
     val contact: String = "",
+    val helperId: String = "",
     val status: RequestStatus = RequestStatus.OPEN,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now()

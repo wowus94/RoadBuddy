@@ -9,6 +9,7 @@ expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>
 
 fun getRoomDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase =
     builder
+        .fallbackToDestructiveMigration(true)
         .fallbackToDestructiveMigrationOnDowngrade(true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)

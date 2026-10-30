@@ -9,6 +9,7 @@ import ru.vlyashuk.roadbuddy.data.local.mapper.RoadRequestMapper
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.domain.error.AppError
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
+import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
@@ -36,7 +37,7 @@ class RoadRequestRepositoryImpl(
             id = newId, authorId = currentUid, createdAt = now, updatedAt = now
         )
         remote.createRequest(toSave)
-        dao.insert(RoadRequestMapper.toEntity(toSave))
+        cacheRequest(toSave)
         AppResult.Success(Unit)
     } catch (e: Exception) {
         AppResult.Failure(AppError.Network)
@@ -56,7 +57,40 @@ class RoadRequestRepositoryImpl(
 
         val toSave = request.copy(updatedAt = Clock.System.now())
         remote.updateRequest(toSave)
-        dao.insert(RoadRequestMapper.toEntity(toSave))
+        cacheRequest(toSave)
+        AppResult.Success(Unit)
+    } catch (e: Exception) {
+        AppResult.Failure(AppError.Network)
+    }
+
+    override suspend fun updateRequestStatus(request: RoadRequest): AppResult<Unit> = try {
+        val currentUid =
+            getCurrentUserUseCase().first()?.uid ?: return AppResult.Failure(AppError.Unauthorized)
+
+        val remoteRequest = remote.getRequest(request.id).first()
+            ?: return AppResult.Failure(AppError.NotFound)
+
+        val isAuthor = remoteRequest.authorId == currentUid
+        val isHelper = remoteRequest.helperId == currentUid
+
+        val newHelperId = when {
+            isAuthor -> remoteRequest.helperId
+            remoteRequest.status == RequestStatus.OPEN && request.status == RequestStatus.IN_PROGRESS ->
+                currentUid
+            isHelper -> remoteRequest.helperId
+            else -> return AppResult.Failure(AppError.Forbidden)
+        }
+
+        val finalHelperId =
+            if (request.status == RequestStatus.OPEN) "" else newHelperId
+
+        val toSave = remoteRequest.copy(
+            status = request.status,
+            helperId = finalHelperId,
+            updatedAt = Clock.System.now()
+        )
+        remote.updateRequest(toSave)
+        cacheRequest(toSave)
         AppResult.Success(Unit)
     } catch (e: Exception) {
         AppResult.Failure(AppError.Network)
@@ -71,10 +105,24 @@ class RoadRequestRepositoryImpl(
             AppResult.Failure(AppError.Forbidden)
         } else {
             remote.deleteRequest(id)
-            dao.deleteById(id)
+            evictCachedRequest(id)
             AppResult.Success(Unit)
         }
     } catch (e: Exception) {
         AppResult.Failure(AppError.Network)
+    }
+
+    /**
+     * Local Room cache is write-through only; failures must not mask a
+     * successful remote operation as a network error.
+     */
+    private suspend fun cacheRequest(request: RoadRequest) = try {
+        dao.insert(RoadRequestMapper.toEntity(request))
+    } catch (_: Exception) {
+    }
+
+    private suspend fun evictCachedRequest(id: String) = try {
+        dao.deleteById(id)
+    } catch (_: Exception) {
     }
 }

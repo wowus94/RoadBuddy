@@ -16,6 +16,7 @@ object RoadRequestMapper {
         authorId = request.authorId,
         authorName = request.authorName,
         contact = request.contact,
+        helperId = request.helperId,
         status = request.status.name,
         createdAt = request.createdAt.toEpochMilliseconds(),
         updatedAt = request.updatedAt.toEpochMilliseconds()
@@ -31,6 +32,7 @@ object RoadRequestMapper {
         authorId = entity.authorId,
         authorName = entity.authorName,
         contact = entity.contact,
+        helperId = entity.helperId,
         status = enumValueOf(entity.status),
         createdAt = Instant.fromEpochMilliseconds(entity.createdAt),
         updatedAt = Instant.fromEpochMilliseconds(entity.updatedAt)

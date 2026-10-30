@@ -12,7 +12,7 @@ import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
-import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestStatusUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.DeleteRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import ru.vlyashuk.roadbuddy.presentation.error.toMessage
@@ -22,16 +22,18 @@ data class DetailsUiState(
     val request: RoadRequest? = null,
     val isLoading: Boolean = false,
     val isOwner: Boolean = false,
+    val isHelper: Boolean = false,
     val isDeleting: Boolean = false,
     val isDeleted: Boolean = false,
     val isCancelling: Boolean = false,
+    val isStatusUpdating: Boolean = false,
     val error: String? = null
 )
 
 class DetailsViewModel(
     private val getRequestByIdUseCase: GetRequestByIdUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val updateRequestUseCase: UpdateRequestUseCase,
+    private val updateRequestStatusUseCase: UpdateRequestStatusUseCase,
     private val deleteRequestUseCase: DeleteRequestUseCase,
     private val requestId: String
 ) : ViewModel() {
@@ -44,6 +46,7 @@ class DetailsViewModel(
         val isDeleting: Boolean = false,
         val isDeleted: Boolean = false,
         val isCancelling: Boolean = false,
+        val isStatusUpdating: Boolean = false,
         val localError: String? = null
     )
 
@@ -65,9 +68,11 @@ class DetailsViewModel(
                                 request = request,
                                 isLoading = false,
                                 isOwner = request != null && user != null && request.authorId == user.uid,
+                                isHelper = request != null && user != null && request.helperId == user.uid,
                                 isDeleting = local.isDeleting,
                                 isDeleted = local.isDeleted,
                                 isCancelling = local.isCancelling,
+                                isStatusUpdating = local.isStatusUpdating,
                                 error = local.localError ?: if (request == null) "Request not found" else null
                             )
                         }
@@ -77,6 +82,7 @@ class DetailsViewModel(
                                 isDeleting = local.isDeleting,
                                 isDeleted = local.isDeleted,
                                 isCancelling = local.isCancelling,
+                                isStatusUpdating = local.isStatusUpdating,
                                 error = local.localError ?: result.error.toMessage()
                             )
                         }
@@ -92,18 +98,21 @@ class DetailsViewModel(
     }
 
     fun cancelRequest() {
+        updateRequestStatus(RequestStatus.CANCELLED)
+    }
+
+    fun updateRequestStatus(newStatus: RequestStatus) {
         val currentRequest = _uiState.value.request ?: return
-        if (!_uiState.value.isOwner) return
 
         viewModelScope.launch {
-            _localState.update { it.copy(isCancelling = true, localError = null) }
-            val cancelledRequest = currentRequest.copy(status = RequestStatus.CANCELLED)
-            when (val result = updateRequestUseCase(cancelledRequest)) {
+            _localState.update { it.copy(isStatusUpdating = true, localError = null) }
+            val updatedRequest = currentRequest.copy(status = newStatus)
+            when (val result = updateRequestStatusUseCase(updatedRequest)) {
                 is AppResult.Success -> {
-                    _localState.update { it.copy(isCancelling = false) }
+                    _localState.update { it.copy(isStatusUpdating = false) }
                 }
                 is AppResult.Failure -> {
-                    _localState.update { it.copy(isCancelling = false, localError = result.error.toMessage()) }
+                    _localState.update { it.copy(isStatusUpdating = false, localError = result.error.toMessage()) }
                 }
             }
         }

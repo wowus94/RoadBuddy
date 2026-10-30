@@ -14,6 +14,7 @@ data class RoadRequestEntity(
     val authorId: String = "",
     val authorName: String = "",
     val contact: String = "",
+    val helperId: String = "",
     val status: String,
     val createdAt: Long,
     val updatedAt: Long
