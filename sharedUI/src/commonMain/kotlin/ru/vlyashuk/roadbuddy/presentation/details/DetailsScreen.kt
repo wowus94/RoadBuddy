@@ -100,10 +100,13 @@ fun DetailsScreen(
                 else -> RequestDetails(
                     request = state.request!!,
                     isOwner = state.isOwner,
+                    isHelper = state.isHelper,
                     isDeleting = state.isDeleting,
                     isCancelling = state.isCancelling,
+                    isStatusUpdating = state.isStatusUpdating,
                     onCancelClick = viewModel::cancelRequest,
                     onDeleteClick = viewModel::deleteRequest,
+                    onStatusUpdateClick = viewModel::updateRequestStatus,
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
@@ -118,10 +121,13 @@ fun DetailsScreen(
 private fun RequestDetails(
     request: RoadRequest,
     isOwner: Boolean,
+    isHelper: Boolean,
     isDeleting: Boolean,
     isCancelling: Boolean,
+    isStatusUpdating: Boolean,
     onCancelClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onStatusUpdateClick: (RequestStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -192,31 +198,90 @@ private fun RequestDetails(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (request.status == RequestStatus.OPEN || request.status == RequestStatus.IN_PROGRESS) {
-                    Button(
-                        onClick = onCancelClick,
-                        enabled = !isCancelling && !isDeleting,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (isCancelling) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .size(20.dp),
-                                color = MaterialTheme.colorScheme.onErrorContainer
-                            )
+                when (request.status) {
+                    RequestStatus.OPEN -> {
+                        Button(
+                            onClick = { onStatusUpdateClick(RequestStatus.CANCELLED) },
+                            enabled = !isStatusUpdating && !isDeleting,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isStatusUpdating) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(20.dp),
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                            Text("Cancel request")
                         }
-                        Text("Cancel request")
+                    }
+                    RequestStatus.IN_PROGRESS -> {
+                        Button(
+                            onClick = { onStatusUpdateClick(RequestStatus.COMPLETED) },
+                            enabled = !isStatusUpdating && !isDeleting,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isStatusUpdating) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                            Text("Mark as completed")
+                        }
+
+                        Button(
+                            onClick = { onStatusUpdateClick(RequestStatus.CANCELLED) },
+                            enabled = !isStatusUpdating && !isDeleting,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isStatusUpdating) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(20.dp),
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                            Text("Cancel request")
+                        }
+                    }
+                    RequestStatus.COMPLETED, RequestStatus.CANCELLED -> {
+                        Button(
+                            onClick = { onStatusUpdateClick(RequestStatus.OPEN) },
+                            enabled = !isStatusUpdating && !isDeleting,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isStatusUpdating) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(20.dp)
+                                )
+                            }
+                            Text("Reopen request")
+                        }
                     }
                 }
 
                 OutlinedButton(
                     onClick = { showDeleteDialog = true },
-                    enabled = !isCancelling && !isDeleting,
+                    enabled = !isStatusUpdating && !isDeleting,
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     ),
@@ -231,6 +296,78 @@ private fun RequestDetails(
                         )
                     }
                     Text("Delete request")
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                when (request.status) {
+                    RequestStatus.OPEN -> {
+                        Button(
+                            onClick = { onStatusUpdateClick(RequestStatus.IN_PROGRESS) },
+                            enabled = !isStatusUpdating,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isStatusUpdating) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                            Text("Accept request / Help")
+                        }
+                    }
+                    RequestStatus.IN_PROGRESS -> {
+                        if (isHelper) {
+                            Button(
+                                onClick = { onStatusUpdateClick(RequestStatus.COMPLETED) },
+                                enabled = !isStatusUpdating,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (isStatusUpdating) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .size(20.dp),
+                                        color = MaterialTheme.colorScheme.onSecondary
+                                    )
+                                }
+                                Text("Mark as completed")
+                            }
+
+                            OutlinedButton(
+                                onClick = { onStatusUpdateClick(RequestStatus.OPEN) },
+                                enabled = !isStatusUpdating,
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (isStatusUpdating) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .size(20.dp),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                                Text("Decline / Stop helping")
+                            }
+                        }
+                    }
+                    else -> {}
                 }
             }
         }
