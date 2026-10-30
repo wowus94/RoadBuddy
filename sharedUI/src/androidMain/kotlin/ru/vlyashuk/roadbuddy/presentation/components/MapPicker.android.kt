@@ -2,20 +2,31 @@ package ru.vlyashuk.roadbuddy.presentation.components
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.os.Build
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -25,13 +36,16 @@ import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.location.Location
 import com.yandex.mapkit.location.LocationListener
 import com.yandex.mapkit.location.LocationStatus
+import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
-import com.yandex.mapkit.map.InputListener
-import com.yandex.mapkit.map.Map
-import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
-import com.yandex.runtime.image.ImageProvider
+import org.jetbrains.compose.resources.painterResource
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.ic_add
+import roadbuddy.sharedui.generated.resources.ic_remove
 import java.lang.ref.WeakReference
+import kotlin.math.hypot
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 private const val MAPKIT_META_KEY = "ru.vlyashuk.roadbuddy.MAPKIT_API_KEY"
 private const val DEFAULT_LAT = 55.7558
@@ -74,22 +88,29 @@ actual fun MapPicker(
     }
     val map = mapView.mapWindow.map
 
-    val listener: InputListener = remember(onLocationSelected) {
-        object : InputListener {
-            override fun onMapTap(m: Map, p: Point) =
-                onLocationSelected(p.latitude, p.longitude)
-            override fun onMapLongTap(m: Map, p: Point) = Unit
+    val cameraListener = remember(onLocationSelected) {
+        CameraListener { _, cameraPosition, _, finished ->
+            if (finished) {
+                val target = cameraPosition.target
+                onLocationSelected(target.latitude, target.longitude)
+            }
         }
     }
-    DisposableEffect(mapView, listener) {
-        val ref: WeakReference<InputListener> = WeakReference(listener)
-        map.addInputListener(ref)
-        onDispose { map.removeInputListener(ref) }
+
+    DisposableEffect(mapView, cameraListener) {
+        val ref = WeakReference(cameraListener)
+        map.addCameraListener(ref)
+        onDispose { map.removeCameraListener(ref) }
     }
 
     DisposableEffect(lifecycleOwner, mapView) {
-        fun start() { MapKitFactory.getInstance().onStart(); mapView.onStart() }
-        fun stop() { mapView.onStop(); MapKitFactory.getInstance().onStop() }
+        fun start() {
+            MapKitFactory.getInstance().onStart(); mapView.onStart()
+        }
+
+        fun stop() {
+            mapView.onStop(); MapKitFactory.getInstance().onStop()
+        }
         if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) start()
         val observer = LifecycleEventObserver { _, e ->
             when (e) {
@@ -116,46 +137,145 @@ actual fun MapPicker(
             override fun onLocationStatusUpdated(status: LocationStatus) {
                 if (status != LocationStatus.AVAILABLE) {
                     val defaultTarget = Point(DEFAULT_LAT, DEFAULT_LON)
-                    map.move(CameraPosition(defaultTarget, ZOOM, 0f, 0f), Animation(Animation.Type.SMOOTH, 0.3f), null)
+                    map.move(
+                        CameraPosition(defaultTarget, ZOOM, 0f, 0f),
+                        Animation(Animation.Type.SMOOTH, 0.3f),
+                        null
+                    )
                 }
             }
         }
     }
 
-    val markerImageProvider = remember {
-        val size = 60
-        val bitmap = createBitmap(size, size)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-        }
-        paint.color = Color.WHITE
-        canvas.drawCircle(size / 2f, size / 2f, size / 2.2f, paint)
-        paint.color = "#E53935".toColorInt() // Красный цвет
-        canvas.drawCircle(size / 2f, size / 2f, size / 3.2f, paint)
-        ImageProvider.fromBitmap(bitmap)
-    }
-
-    val placemark = remember { mutableStateOf<PlacemarkMapObject?>(null) }
-    LaunchedEffect(latitude, longitude, locationManager, locationListener, markerImageProvider) {
+    LaunchedEffect(latitude, longitude, locationManager, locationListener) {
         if (latitude == null || longitude == null) {
+            val defaultTarget = Point(DEFAULT_LAT, DEFAULT_LON)
+            map.move(
+                CameraPosition(defaultTarget, ZOOM, 0f, 0f)
+            )
             locationManager.requestSingleUpdate(
                 WeakReference<LocationListener>(locationListener)
             )
         } else {
             val target = Point(latitude, longitude)
-            map.move(CameraPosition(target, ZOOM, 0f, 0f), Animation(Animation.Type.SMOOTH, 0.3f), null)
-            if (placemark.value == null) {
-                placemark.value = map.mapObjects.addPlacemark().apply {
-                    setIcon(markerImageProvider)
-                }
-            }
-            placemark.value?.let {
-                it.isVisible = true
-                it.geometry = target
+            val currentCenter = map.cameraPosition.target
+            val distance = hypot(
+                currentCenter.latitude - target.latitude,
+                currentCenter.longitude - target.longitude
+            )
+            if (distance > 0.0001) {
+                map.move(
+                    CameraPosition(target, ZOOM, 0f, 0f),
+                    Animation(Animation.Type.SMOOTH, 0.3f),
+                    null
+                )
             }
         }
     }
 
-    AndroidView(factory = { mapView }, modifier = modifier)
+    Box(modifier = modifier) {
+        AndroidView(
+            factory = { mapView },
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(y = (-20).dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Card(
+                    modifier = Modifier.size(24.dp),
+                    shape = RoundedCornerShape(100.dp),
+                    colors = CardDefaults.cardColors(containerColor = ComposeColor.Red),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, ComposeColor.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier.size(6.dp),
+                            shape = RoundedCornerShape(100.dp),
+                            colors = CardDefaults.cardColors(containerColor = ComposeColor.White)
+                        ) {}
+                    }
+                }
+                Card(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .height(14.dp),
+                    shape = RoundedCornerShape(0.dp),
+                    colors = CardDefaults.cardColors(containerColor = ComposeColor.Red)
+                ) {}
+            }
+        }
+
+        Card(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = ComposeColor.White.copy(alpha = 0.9f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.width(IntrinsicSize.Max),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IconButton(
+                    onClick = {
+                        val currentPos = map.cameraPosition
+                        map.move(
+                            CameraPosition(
+                                currentPos.target,
+                                currentPos.zoom + 1f,
+                                currentPos.azimuth,
+                                currentPos.tilt
+                            ),
+                            Animation(Animation.Type.SMOOTH, 0.2f),
+                            null
+                        )
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_add),
+                        contentDescription = "Zoom In",
+                        tint = ComposeColor.Black
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    thickness = 1.dp,
+                    color = ComposeColor.LightGray.copy(alpha = 0.5f)
+                )
+
+                IconButton(
+                    onClick = {
+                        val currentPos = map.cameraPosition
+                        map.move(
+                            CameraPosition(
+                                currentPos.target,
+                                currentPos.zoom - 1f,
+                                currentPos.azimuth,
+                                currentPos.tilt
+                            ),
+                            Animation(Animation.Type.SMOOTH, 0.2f),
+                            null
+                        )
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_remove),
+                        contentDescription = "Zoom In",
+                        tint = ComposeColor.Black
+                    )
+                }
+            }
+        }
+    }
 }
