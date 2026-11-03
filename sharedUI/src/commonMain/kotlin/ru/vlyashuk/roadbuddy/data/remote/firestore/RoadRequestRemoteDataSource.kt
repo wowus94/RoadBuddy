@@ -8,6 +8,7 @@ import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 
 interface RoadRequestRemoteDataSource {
     fun getRequests(): Flow<List<RoadRequest>>
+    fun getRequestsByAuthor(authorId: String): Flow<List<RoadRequest>>
     fun getRequest(id: String): Flow<RoadRequest?>
     suspend fun createRequest(request: RoadRequest)
     suspend fun updateRequest(request: RoadRequest)
@@ -22,6 +23,12 @@ class FirestoreRequestRemoteDataSource : RoadRequestRemoteDataSource {
         collection.snapshots.map { snapshot ->
             snapshot.documents.map { it.data(RoadRequest.serializer()) }
         }
+
+    override fun getRequestsByAuthor(authorId: String): Flow<List<RoadRequest>> =
+        collection.where { "authorId" equalTo authorId }
+            .snapshots.map { snapshot ->
+                snapshot.documents.map { it.data(RoadRequest.serializer()) }
+            }
 
     override fun getRequest(id: String): Flow<RoadRequest?> =
         collection.document(id).snapshots.map { snapshot ->
