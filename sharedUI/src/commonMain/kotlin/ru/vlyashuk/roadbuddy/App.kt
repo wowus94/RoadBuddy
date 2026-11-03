@@ -31,6 +31,7 @@ import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.login.LoginScreen
+import ru.vlyashuk.roadbuddy.presentation.myrequests.MyRequestsScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.presentation.register.RegisterScreen
 import ru.vlyashuk.roadbuddy.presentation.session.SessionState
@@ -124,7 +125,14 @@ fun App(
                         entry<Route.Home> {
                             HomeScreen(
                                 onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
-                                onNavigateToCreate = { backStack.add(Route.Create) }
+                                onNavigateToCreate = { backStack.add(Route.Create) },
+                                onNavigateToMyRequests = { backStack.add(Route.MyRequests) }
+                            )
+                        }
+                        entry<Route.MyRequests> {
+                            MyRequestsScreen(
+                                onBack = { backStack.removeLastOrNull() },
+                                onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
                             )
                         }
                         entry<Route.Details> { key ->

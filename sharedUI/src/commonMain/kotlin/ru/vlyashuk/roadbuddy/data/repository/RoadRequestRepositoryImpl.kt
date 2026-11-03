@@ -1,8 +1,11 @@
 package ru.vlyashuk.roadbuddy.data.repository
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import ru.vlyashuk.roadbuddy.data.local.dao.RoadRequestDao
 import ru.vlyashuk.roadbuddy.data.local.mapper.RoadRequestMapper
@@ -25,6 +28,21 @@ class RoadRequestRepositoryImpl(
     override fun getRequests(): Flow<AppResult<List<RoadRequest>>> = remote.getRequests()
         .map<List<RoadRequest>, AppResult<List<RoadRequest>>> { AppResult.Success(it) }
         .catch { emit(AppResult.Failure(AppError.Network)) }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getMyRequests(): Flow<AppResult<List<RoadRequest>>> =
+        getCurrentUserUseCase()
+            .flatMapLatest { user ->
+                if (user == null) {
+                    flowOf(AppResult.Failure(AppError.Unauthorized))
+                } else {
+                    remote.getRequestsByAuthor(user.uid)
+                        .map<List<RoadRequest>, AppResult<List<RoadRequest>>> {
+                            AppResult.Success(it)
+                        }
+                }
+            }
+            .catch { emit(AppResult.Failure(AppError.Network)) }
 
 
     override suspend fun createRequest(request: RoadRequest): AppResult<Unit> = try {

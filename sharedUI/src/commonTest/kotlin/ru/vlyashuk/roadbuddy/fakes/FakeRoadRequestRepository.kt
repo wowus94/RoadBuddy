@@ -15,6 +15,7 @@ class FakeRoadRequestRepository : RoadRequestRepository {
 
     var createResult: AppResult<Unit> = AppResult.Success(Unit)
     var updateResult: AppResult<Unit> = AppResult.Success(Unit)
+    var deleteResult: AppResult<Unit> = AppResult.Success(Unit)
 
     var createdRequest: RoadRequest? = null
         private set
@@ -50,9 +51,19 @@ class FakeRoadRequestRepository : RoadRequestRepository {
             }
         }
 
+    override fun getMyRequests(): Flow<AppResult<List<RoadRequest>>> = requestsFlow
+
     override suspend fun updateRequest(request: RoadRequest): AppResult<Unit> {
         updateCallCount++
         updatedRequest = request
         return updateResult
     }
+
+    override suspend fun updateRequestStatus(request: RoadRequest): AppResult<Unit> {
+        updateCallCount++
+        updatedRequest = request
+        return updateResult
+    }
+
+    override suspend fun deleteRequest(id: String): AppResult<Unit> = deleteResult
 }

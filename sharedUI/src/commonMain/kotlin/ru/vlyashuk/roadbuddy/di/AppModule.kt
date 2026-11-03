@@ -16,6 +16,7 @@ import ru.vlyashuk.roadbuddy.domain.repository.AuthRepository
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.DeleteRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.GetMyRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestStatusUseCase
@@ -30,6 +31,7 @@ import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
 import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
+import ru.vlyashuk.roadbuddy.presentation.myrequests.MyRequestsViewModel
 import ru.vlyashuk.roadbuddy.presentation.register.RegisterViewModel
 import ru.vlyashuk.roadbuddy.presentation.session.SessionViewModel
 
@@ -50,6 +52,7 @@ val appModule = module {
 
     // UseCase
     factoryOf(::GetRequestsUseCase)
+    factoryOf(::GetMyRequestsUseCase)
     factoryOf(::CreateRequestUseCase)
     factoryOf(::GetRequestByIdUseCase)
     factoryOf(::UpdateRequestUseCase)
@@ -66,6 +69,7 @@ val appModule = module {
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::MyRequestsViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
         DetailsViewModel(get(), get(), get(), get(), requestId)

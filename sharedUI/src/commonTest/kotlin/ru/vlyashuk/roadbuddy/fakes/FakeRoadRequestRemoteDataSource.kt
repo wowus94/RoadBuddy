@@ -29,6 +29,12 @@ class FakeRoadRequestRemoteDataSource : RoadRequestRemoteDataSource {
             requests
         }
 
+    override fun getRequestsByAuthor(authorId: String): Flow<List<RoadRequest>> =
+        requestsFlow.map { requests ->
+            requestsError?.let { throw it }
+            requests.filter { it.authorId == authorId }
+        }
+
     override fun getRequest(id: String): Flow<RoadRequest?> =
         requestsFlow.map { requests ->
             requestsError?.let { throw it }
