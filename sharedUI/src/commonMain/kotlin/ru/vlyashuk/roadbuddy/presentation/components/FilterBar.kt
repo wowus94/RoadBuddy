@@ -15,8 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
+import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
 
 @Composable
 fun FilterBar(
@@ -43,13 +47,13 @@ fun FilterBar(
             AppChip(
                 selected = selectedType == null,
                 onClick = { onTypeSelected(null) },
-                label = "All types"
+                label = stringResource(Res.string.all_types)
             )
             RequestType.entries.forEach { type ->
                 AppChip(
                     selected = selectedType == type,
                     onClick = { onTypeSelected(type) },
-                    label = type.name
+                    label = type.toLocalizedName()
                 )
             }
         }
@@ -65,13 +69,13 @@ fun FilterBar(
             AppChip(
                 selected = selectedStatus == null,
                 onClick = { onStatusSelected(null) },
-                label = "All statuses"
+                label = stringResource(Res.string.all_statuses)
             )
             RequestStatus.entries.forEach { status ->
                 AppChip(
                     selected = selectedStatus == status,
                     onClick = { onStatusSelected(status) },
-                    label = status.name
+                    label = status.toLocalizedName()
                 )
             }
         }

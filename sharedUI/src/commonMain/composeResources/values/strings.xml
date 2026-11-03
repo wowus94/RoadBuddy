@@ -1,3 +1,82 @@
 <resources>
-    <string name="road_buddy">Road Buddy</string>
+    <string name="road_buddy">RoadBuddy</string>
+    <string name="my_requests">My requests</string>
+    <string name="logout">Logout</string>
+    <string name="back">Back</string>
+    <string name="filters">Filters</string>
+    <string name="all_types">All types</string>
+    <string name="all_statuses">All statuses</string>
+    <string name="clear_all">Clear all</string>
+    <string name="apply">Apply</string>
+    <string name="sort_newest">Sort: Newest</string>
+    <string name="sort_oldest">Sort: Oldest</string>
+    <string name="newest_first">Newest first</string>
+    <string name="oldest_first">Oldest first</string>
+    <string name="requests_found">%1$s requests found</string>
+    <string name="no_requests_match">No requests match your filters</string>
+    <string name="no_requests_yet">No requests yet</string>
+    <string name="you_have_no_requests_yet">You have no requests yet</string>
+
+    <!-- Request Types -->
+    <string name="type_towing">Towing</string>
+    <string name="type_fuel">Fuel delivery</string>
+    <string name="type_battery">Battery service</string>
+    <string name="type_tire">Tire replacement</string>
+    <string name="type_other">Other assistance</string>
+
+    <!-- Request Statuses -->
+    <string name="status_open">Open</string>
+    <string name="status_in_progress">In progress</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_cancelled">Cancelled</string>
+
+    <!-- Details Screen -->
+    <string name="request_details">Request details</string>
+    <string name="edit">Edit</string>
+    <string name="request_not_found">Request not found</string>
+    <string name="label_description">Description</string>
+    <string name="label_type">Type</string>
+    <string name="label_author">Author</string>
+    <string name="label_contact">Contact</string>
+    <string name="label_location">Location</string>
+    <string name="label_created">Created</string>
+    <string name="label_updated">Updated</string>
+    <string name="delete_request_title">Delete Request</string>
+    <string name="delete_request_desc">Are you sure you want to delete this request? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="action_cancel_request">Cancel request</string>
+    <string name="action_mark_completed">Mark as completed</string>
+    <string name="action_reopen_request">Reopen request</string>
+    <string name="action_delete_request">Delete request</string>
+    <string name="action_accept_request">Accept request / Help</string>
+    <string name="action_decline_request">Decline / Stop helping</string>
+
+    <!-- Create and Edit Request Screens -->
+    <string name="new_request">New request</string>
+    <string name="edit_request">Edit request</string>
+    <string name="publish">Publish</string>
+    <string name="save">Save</string>
+    <string name="form_title">Title *</string>
+    <string name="form_description">Description</string>
+    <string name="form_type">Request type</string>
+    <string name="form_author">Your name *</string>
+    <string name="form_contact">Contact *</string>
+    <string name="form_coordinates">Coordinates *</string>
+    <string name="form_coordinates_format">Latitude: %1$s, Longitude: %2$s</string>
+    <string name="form_coordinates_placeholder">Not selected — click to select</string>
+    <string name="form_location">Location</string>
+    <string name="form_location_confirm">Confirm location</string>
+    <string name="form_location_close">Close Map</string>
+
+    <!-- Authentication Screens -->
+    <string name="login_welcome">Welcome back you\'ve been missed!</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_sign_in">Sign in</string>
+    <string name="auth_create_account">Create account</string>
+    <string name="auth_confirm_password">Confirm password</string>
+    <string name="auth_sign_up">Sign up</string>
+    <string name="auth_already_have_account">Already have an account? Sign in</string>
 </resources>

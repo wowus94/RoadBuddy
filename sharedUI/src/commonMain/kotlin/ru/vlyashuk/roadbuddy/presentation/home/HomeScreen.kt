@@ -29,10 +29,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.filters
+import roadbuddy.sharedui.generated.resources.logout
+import roadbuddy.sharedui.generated.resources.my_requests
+import roadbuddy.sharedui.generated.resources.newest_first
+import roadbuddy.sharedui.generated.resources.no_requests_match
+import roadbuddy.sharedui.generated.resources.no_requests_yet
+import roadbuddy.sharedui.generated.resources.oldest_first
+import roadbuddy.sharedui.generated.resources.requests_found
+import roadbuddy.sharedui.generated.resources.road_buddy
+import roadbuddy.sharedui.generated.resources.sort_newest
+import roadbuddy.sharedui.generated.resources.sort_oldest
 import ru.vlyashuk.roadbuddy.presentation.components.FilterBottomSheet
 import ru.vlyashuk.roadbuddy.presentation.components.RequestCard
-import ru.vlyashuk.roadbuddy.presentation.home.SortOption
 
 @Composable
 fun HomeScreen(
@@ -47,17 +59,17 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("RoadBuddy") },
+                title = { Text(stringResource(Res.string.road_buddy)) },
                 actions = {
                     Text(
-                        text = "My requests",
+                        text = stringResource(Res.string.my_requests),
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clickable(onClick = onNavigateToMyRequests),
                         style = MaterialTheme.typography.labelLarge
                     )
                     Text(
-                        text = "Logout",
+                        text = stringResource(Res.string.logout),
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clickable { viewModel.signOut() },
@@ -77,15 +89,15 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "${state.requests.size} requests found",
+                    text = stringResource(Res.string.requests_found, state.requests.size.toString()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -99,10 +111,17 @@ fun HomeScreen(
                         Button(
                             onClick = { isSortMenuExpanded = true },
                             modifier = Modifier.height(32.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                horizontal = 12.dp,
+                                vertical = 4.dp
+                            )
                         ) {
                             Text(
-                                text = if (state.sortOption == SortOption.NEWEST_FIRST) "Sort: Newest" else "Sort: Oldest",
+                                text = if (state.sortOption == SortOption.NEWEST_FIRST) {
+                                    stringResource(Res.string.sort_newest)
+                                } else {
+                                    stringResource(Res.string.sort_oldest)
+                                },
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }
@@ -111,14 +130,14 @@ fun HomeScreen(
                             onDismissRequest = { isSortMenuExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Newest first") },
+                                text = { Text(stringResource(Res.string.newest_first)) },
                                 onClick = {
                                     viewModel.setSortOption(SortOption.NEWEST_FIRST)
                                     isSortMenuExpanded = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Oldest first") },
+                                text = { Text(stringResource(Res.string.oldest_first)) },
                                 onClick = {
                                     viewModel.setSortOption(SortOption.OLDEST_FIRST)
                                     isSortMenuExpanded = false
@@ -130,11 +149,19 @@ fun HomeScreen(
                     Button(
                         onClick = { isFilterSheetOpen = true },
                         modifier = Modifier.height(32.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = 12.dp,
+                            vertical = 4.dp
+                        )
                     ) {
-                        val filterCount = (if (state.selectedType != null) 1 else 0) + (if (state.selectedStatus != null) 1 else 0)
+                        val filterCount =
+                            (if (state.selectedType != null) 1 else 0) + (if (state.selectedStatus != null) 1 else 0)
                         Text(
-                            text = if (filterCount > 0) "Filters ($filterCount)" else "Filters",
+                            text = if (filterCount > 0) {
+                                "${stringResource(Res.string.filters)} ($filterCount)"
+                            } else {
+                                stringResource(Res.string.filters)
+                            },
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
@@ -153,14 +180,16 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Center)
                     )
+
                     state.requests.isEmpty() -> Text(
                         text = if (state.selectedType != null || state.selectedStatus != null) {
-                            "No requests match your filters"
+                            stringResource(Res.string.no_requests_match)
                         } else {
-                            "No requests yet"
+                            stringResource(Res.string.no_requests_yet)
                         },
                         modifier = Modifier.align(Alignment.Center)
                     )
+
                     else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(state.requests) { request ->
                             RequestCard(

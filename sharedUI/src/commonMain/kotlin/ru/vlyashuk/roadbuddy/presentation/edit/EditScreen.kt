@@ -13,8 +13,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.presentation.components.RequestForm
 
 @Composable
@@ -32,10 +35,10 @@ fun EditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit request") },
+                title = { Text(stringResource(Res.string.edit_request)) },
                 navigationIcon = {
                     Text(
-                        "Back",
+                        stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable(onClick = onBack)
                             .padding(horizontal = 16.dp)
@@ -52,7 +55,7 @@ fun EditScreen(
                 modifier = Modifier.padding(padding)
             )
             state.request == null -> Text(
-                text = "Request not found",
+                text = stringResource(Res.string.request_not_found),
                 modifier = Modifier.padding(padding)
             )
             else -> RequestForm(
@@ -64,7 +67,7 @@ fun EditScreen(
                 isSaving = state.isSaving,
                 isValid = state.isValid,
                 error = state.error,
-                buttonText = "Save",
+                buttonText = stringResource(Res.string.save),
                 latitude = state.latitude,
                 longitude = state.longitude,
                 onLocationSelected = viewModel::onLocationSelected,

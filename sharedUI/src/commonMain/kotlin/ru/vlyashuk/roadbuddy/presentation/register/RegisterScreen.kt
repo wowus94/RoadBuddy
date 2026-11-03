@@ -35,9 +35,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.ic_logo
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.theme.GreenMain
 
 @Composable
@@ -72,14 +73,14 @@ fun RegisterScreen(
                     .size(64.dp)
             )
             Text(
-                text = "Create account",
+                text = stringResource(Res.string.auth_create_account),
                 modifier = Modifier.padding(4.dp)
             )
 
             OutlinedTextField(
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
-                label = { Text("Email") },
+                label = { Text(stringResource(Res.string.auth_email)) },
                 isError = state.emailError != null,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -103,7 +104,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.password,
                 onValueChange = viewModel::onPasswordChange,
-                label = { Text("Password") },
+                label = { Text(stringResource(Res.string.auth_password)) },
                 isError = state.passwordError != null,
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -128,7 +129,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChange,
-                label = { Text("Confirm password") },
+                label = { Text(stringResource(Res.string.auth_confirm_password)) },
                 singleLine = true,
                 isError = state.confirmPasswordError != null,
                 visualTransformation = PasswordVisualTransformation(),
@@ -177,7 +178,7 @@ fun RegisterScreen(
                     disabledContentColor = Color.White,
                 )
             ) {
-                Text("Sign up")
+                Text(stringResource(Res.string.auth_sign_up))
             }
 
             TextButton(
@@ -189,7 +190,7 @@ fun RegisterScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Already have an account? Sign in")
+                Text(stringResource(Res.string.auth_already_have_account))
             }
         }
     }

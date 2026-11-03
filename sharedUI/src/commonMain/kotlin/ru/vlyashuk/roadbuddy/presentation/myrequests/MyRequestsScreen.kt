@@ -28,7 +28,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.presentation.components.FilterBottomSheet
 import ru.vlyashuk.roadbuddy.presentation.components.RequestCard
 import ru.vlyashuk.roadbuddy.presentation.home.SortOption
@@ -45,10 +48,10 @@ fun MyRequestsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My requests") },
+                title = { Text(stringResource(Res.string.my_requests)) },
                 navigationIcon = {
                     Text(
-                        text = "Back",
+                        text = stringResource(Res.string.back),
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clickable(onClick = onBack),
@@ -63,15 +66,15 @@ fun MyRequestsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "${state.requests.size} requests found",
+                    text = stringResource(Res.string.requests_found, state.requests.size.toString()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -88,7 +91,11 @@ fun MyRequestsScreen(
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (state.sortOption == SortOption.NEWEST_FIRST) "Sort: Newest" else "Sort: Oldest",
+                                text = if (state.sortOption == SortOption.NEWEST_FIRST) {
+                                    stringResource(Res.string.sort_newest)
+                                } else {
+                                    stringResource(Res.string.sort_oldest)
+                                },
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }
@@ -97,14 +104,14 @@ fun MyRequestsScreen(
                             onDismissRequest = { isSortMenuExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Newest first") },
+                                text = { Text(stringResource(Res.string.newest_first)) },
                                 onClick = {
                                     viewModel.setSortOption(SortOption.NEWEST_FIRST)
                                     isSortMenuExpanded = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Oldest first") },
+                                text = { Text(stringResource(Res.string.oldest_first)) },
                                 onClick = {
                                     viewModel.setSortOption(SortOption.OLDEST_FIRST)
                                     isSortMenuExpanded = false
@@ -120,7 +127,11 @@ fun MyRequestsScreen(
                     ) {
                         val filterCount = (if (state.selectedType != null) 1 else 0) + (if (state.selectedStatus != null) 1 else 0)
                         Text(
-                            text = if (filterCount > 0) "Filters ($filterCount)" else "Filters",
+                            text = if (filterCount > 0) {
+                                "${stringResource(Res.string.filters)} ($filterCount)"
+                            } else {
+                                stringResource(Res.string.filters)
+                            },
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
@@ -142,9 +153,9 @@ fun MyRequestsScreen(
 
                     state.requests.isEmpty() -> Text(
                         text = if (state.selectedType != null || state.selectedStatus != null) {
-                            "No requests match your filters"
+                            stringResource(Res.string.no_requests_match)
                         } else {
-                            "You have no requests yet"
+                            stringResource(Res.string.you_have_no_requests_yet)
                         },
                         modifier = Modifier.align(Alignment.Center)
                     )

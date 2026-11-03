@@ -1,5 +1,7 @@
 package ru.vlyashuk.roadbuddy.domain.validation
 
+// TODO locale
+
 object AuthValidators {
 
     private val EMAIL_REGEX =

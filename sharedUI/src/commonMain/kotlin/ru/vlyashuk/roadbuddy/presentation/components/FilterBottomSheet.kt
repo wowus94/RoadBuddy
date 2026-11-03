@@ -23,6 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
+import org.jetbrains.compose.resources.stringResource
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.filters
+import roadbuddy.sharedui.generated.resources.clear_all
+import roadbuddy.sharedui.generated.resources.apply
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +60,7 @@ fun FilterBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Filters",
+                    text = stringResource(Res.string.filters),
                     style = MaterialTheme.typography.titleMedium
                 )
                 if (selectedType != null || selectedStatus != null) {
@@ -63,7 +68,7 @@ fun FilterBottomSheet(
                         onTypeSelected(null)
                         onStatusSelected(null)
                     }) {
-                        Text("Clear all")
+                        Text(stringResource(Res.string.clear_all))
                     }
                 }
             }
@@ -85,7 +90,7 @@ fun FilterBottomSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                Text("Apply")
+                Text(stringResource(Res.string.apply))
             }
         }
     }

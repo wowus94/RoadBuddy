@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
+import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
 
 @Composable
 fun RequestCard(
@@ -29,7 +30,7 @@ fun RequestCard(
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = request.status.name,
+                text = request.status.toLocalizedName(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -35,9 +35,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.ic_logo
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.theme.GreenMain
 
 @Composable
@@ -72,13 +73,13 @@ fun LoginScreen(
                     .size(64.dp)
             )
             Text(
-                text = "Welcome back you've been missed!",
+                text = stringResource(Res.string.login_welcome),
                 modifier = Modifier.padding(4.dp)
             )
             OutlinedTextField(
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
-                label = { Text("Email") },
+                label = { Text(stringResource(Res.string.auth_email)) },
                 isError = state.emailError != null,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -106,7 +107,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = state.password,
                 onValueChange = viewModel::onPasswordChange,
-                label = { Text("Password") },
+                label = { Text(stringResource(Res.string.auth_password)) },
                 isError = state.passwordError != null,
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -137,7 +138,7 @@ fun LoginScreen(
                 onClick = viewModel::resetPassword,
                 enabled = !state.isLoading
             ) {
-                Text("Forgot password?")
+                Text(stringResource(Res.string.auth_forgot_password))
             }
 
             Spacer(Modifier.height(8.dp))
@@ -166,7 +167,7 @@ fun LoginScreen(
                     disabledContentColor = Color.White,
                 )
             ) {
-                Text("Sign in")
+                Text(stringResource(Res.string.auth_sign_in))
             }
 
             TextButton(
@@ -178,7 +179,7 @@ fun LoginScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Create account")
+                Text(stringResource(Res.string.auth_create_account))
             }
         }
     }

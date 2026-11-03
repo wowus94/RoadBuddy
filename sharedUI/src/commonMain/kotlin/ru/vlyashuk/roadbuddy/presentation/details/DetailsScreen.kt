@@ -33,6 +33,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.jetbrains.compose.resources.stringResource
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.*
+import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.utils.DateTimeConverter
@@ -56,7 +60,7 @@ fun DetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Request details") },
+                title = { Text(stringResource(Res.string.request_details)) },
                 navigationIcon = {
                     Text(
                         text = "←",
@@ -69,7 +73,7 @@ fun DetailsScreen(
                 actions = {
                     if (state.isOwner) {
                         Text(
-                            text = "Edit",
+                            text = stringResource(Res.string.edit),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .clickable { onNavigateToEdit(requestId) },
@@ -94,7 +98,7 @@ fun DetailsScreen(
                 )
 
                 state.request == null -> Text(
-                    text = "Request not found",
+                    text = stringResource(Res.string.request_not_found),
                     modifier = Modifier.align(Alignment.Center)
                 )
                 else -> RequestDetails(
@@ -144,15 +148,15 @@ private fun RequestDetails(
 
         StatusBadge(status = request.status)
 
-        DetailItem(label = "Description", value = request.description)
-        DetailItem(label = "Type", value = request.type.name)
-        DetailItem(label = "Author", value = request.authorName)
-        DetailItem(label = "Contact", value = request.contact)
+        DetailItem(label = stringResource(Res.string.label_description), value = request.description)
+        DetailItem(label = stringResource(Res.string.label_type), value = request.type.toLocalizedName())
+        DetailItem(label = stringResource(Res.string.label_author), value = request.authorName)
+        DetailItem(label = stringResource(Res.string.label_contact), value = request.contact)
 
         request.latitude?.let { lat ->
             request.longitude?.let { lon ->
                 DetailItem(
-                    label = "Location",
+                    label = stringResource(Res.string.label_location),
                     value = "$lat, $lon",
                     modifier = Modifier.clickable { openMap(lat, lon, request.title) }
                 )
@@ -160,11 +164,11 @@ private fun RequestDetails(
         }
 
         DetailItem(
-            label = "Created",
+            label = stringResource(Res.string.label_created),
             value = DateTimeConverter.format(request.createdAt)
         )
         DetailItem(
-            label = "Updated",
+            label = stringResource(Res.string.label_updated),
             value = DateTimeConverter.format(request.updatedAt)
         )
 
@@ -174,8 +178,8 @@ private fun RequestDetails(
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
-                    title = { Text("Delete Request") },
-                    text = { Text("Are you sure you want to delete this request? This action cannot be undone.") },
+                    title = { Text(stringResource(Res.string.delete_request_title)) },
+                    text = { Text(stringResource(Res.string.delete_request_desc)) },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -183,12 +187,12 @@ private fun RequestDetails(
                                 onDeleteClick()
                             }
                         ) {
-                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(Res.string.delete), color = MaterialTheme.colorScheme.error)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDeleteDialog = false }) {
-                            Text("Cancel")
+                            Text(stringResource(Res.string.cancel))
                         }
                     }
                 )
@@ -217,7 +221,7 @@ private fun RequestDetails(
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
-                            Text("Cancel request")
+                            Text(stringResource(Res.string.action_cancel_request))
                         }
                     }
                     RequestStatus.IN_PROGRESS -> {
@@ -238,7 +242,7 @@ private fun RequestDetails(
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
-                            Text("Mark as completed")
+                            Text(stringResource(Res.string.action_mark_completed))
                         }
 
                         Button(
@@ -258,7 +262,7 @@ private fun RequestDetails(
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
-                            Text("Cancel request")
+                            Text(stringResource(Res.string.action_cancel_request))
                         }
                     }
                     RequestStatus.COMPLETED, RequestStatus.CANCELLED -> {
@@ -274,7 +278,7 @@ private fun RequestDetails(
                                         .size(20.dp)
                                 )
                             }
-                            Text("Reopen request")
+                            Text(stringResource(Res.string.action_reopen_request))
                         }
                     }
                 }
@@ -295,7 +299,7 @@ private fun RequestDetails(
                             color = MaterialTheme.colorScheme.error
                         )
                     }
-                    Text("Delete request")
+                    Text(stringResource(Res.string.action_delete_request))
                 }
             }
         } else {
@@ -322,7 +326,7 @@ private fun RequestDetails(
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
-                            Text("Accept request / Help")
+                            Text(stringResource(Res.string.action_accept_request))
                         }
                     }
                     RequestStatus.IN_PROGRESS -> {
@@ -344,7 +348,7 @@ private fun RequestDetails(
                                         color = MaterialTheme.colorScheme.onSecondary
                                     )
                                 }
-                                Text("Mark as completed")
+                                Text(stringResource(Res.string.action_mark_completed))
                             }
 
                             OutlinedButton(
@@ -363,7 +367,7 @@ private fun RequestDetails(
                                         color = MaterialTheme.colorScheme.error
                                     )
                                 }
-                                Text("Decline / Stop helping")
+                                Text(stringResource(Res.string.action_decline_request))
                             }
                         }
                     }
@@ -384,7 +388,7 @@ private fun StatusBadge(status: RequestStatus) {
     }
     Card {
         Text(
-            text = status.name,
+            text = status.toLocalizedName(),
             color = color,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )

@@ -11,7 +11,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.presentation.components.RequestForm
 
 @Composable
@@ -28,10 +31,10 @@ fun CreateScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New request") },
+                title = { Text(stringResource(Res.string.new_request)) },
                 navigationIcon = {
                     Text(
-                        "Back",
+                        stringResource(Res.string.back),
                         modifier = Modifier
                             .clickable(onClick = onBack)
                             .padding(horizontal = 16.dp)
@@ -49,7 +52,7 @@ fun CreateScreen(
             isSaving = state.isSaving,
             isValid = state.isValid,
             error = state.error,
-            buttonText = "Publish",
+            buttonText = stringResource(Res.string.publish),
             onTitleChange = viewModel::onTitleChanged,
             onDescriptionChange = viewModel::onDescriptionChanged,
             onTypeChange = viewModel::onTypeChanged,

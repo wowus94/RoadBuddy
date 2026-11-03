@@ -30,10 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.ic_close
-import roadbuddy.sharedui.generated.resources.ic_location_on
+import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
+import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
 
 @Composable
 fun RequestForm(
@@ -70,19 +71,19 @@ fun RequestForm(
             OutlinedTextField(
                 value = title,
                 onValueChange = onTitleChange,
-                label = { Text("Title *") },
+                label = { Text(stringResource(Res.string.form_title)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
-                label = { Text("Description") },
+                label = { Text(stringResource(Res.string.form_description)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
             )
 
-            Text("Request type", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(Res.string.form_type), style = MaterialTheme.typography.labelLarge)
             RequestType.entries.forEach { entry ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -92,21 +93,21 @@ fun RequestForm(
                         selected = entry == type,
                         onClick = { onTypeChange(entry) }
                     )
-                    Text(entry.name)
+                    Text(entry.toLocalizedName())
                 }
             }
 
             OutlinedTextField(
                 value = authorName,
                 onValueChange = onAuthorNameChange,
-                label = { Text("Your name *") },
+                label = { Text(stringResource(Res.string.form_author)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = contact,
                 onValueChange = onContactChange,
-                label = { Text("Contact *") },
+                label = { Text(stringResource(Res.string.form_contact)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -117,21 +118,23 @@ fun RequestForm(
                 )
             }
 
-            Text("Coordinates *", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(Res.string.form_coordinates), style = MaterialTheme.typography.labelLarge)
 
             val locationText = if (latitude != null && longitude != null) {
-                "Latitude: ${latitude.toString().take(8)}, Longitude: ${
+                stringResource(
+                    Res.string.form_coordinates_format,
+                    latitude.toString().take(8),
                     longitude.toString().take(8)
-                }"
+                )
             } else {
-                "Not selected — click to select"
+                stringResource(Res.string.form_coordinates_placeholder)
             }
 
             OutlinedTextField(
                 value = locationText,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Location") },
+                label = { Text(stringResource(Res.string.form_location)) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_location_on),
@@ -192,7 +195,7 @@ fun RequestForm(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_close),
-                        contentDescription = "Close Map",
+                        contentDescription = stringResource(Res.string.form_location_close),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -206,7 +209,7 @@ fun RequestForm(
                     shape = RoundedCornerShape(12.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
                 ) {
-                    Text("Confirm location", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(Res.string.form_location_confirm), style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

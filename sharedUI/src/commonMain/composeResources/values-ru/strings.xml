@@ -1,0 +1,82 @@
+<resources>
+    <string name="road_buddy">RoadBuddy</string>
+    <string name="my_requests">Мои заявки</string>
+    <string name="logout">Выйти</string>
+    <string name="back">Назад</string>
+    <string name="filters">Фильтры</string>
+    <string name="all_types">Все типы</string>
+    <string name="all_statuses">Все статусы</string>
+    <string name="clear_all">Очистить всё</string>
+    <string name="apply">Применить</string>
+    <string name="sort_newest">Сортировка: Сначала новые</string>
+    <string name="sort_oldest">Сортировка: Сначала старые</string>
+    <string name="newest_first">Сначала новые</string>
+    <string name="oldest_first">Сначала старые</string>
+    <string name="requests_found">Найдено заявок: %1$s</string>
+    <string name="no_requests_match">Нет заявок, соответствующих фильтрам</string>
+    <string name="no_requests_yet">Заявок пока нет</string>
+    <string name="you_have_no_requests_yet">У вас пока нет созданных заявок</string>
+    
+    <!-- Request Types -->
+    <string name="type_towing">Буксировка</string>
+    <string name="type_fuel">Доставка топлива</string>
+    <string name="type_battery">Запуск двигателя</string>
+    <string name="type_tire">Замена колеса</string>
+    <string name="type_other">Другая помощь</string>
+
+    <!-- Request Statuses -->
+    <string name="status_open">Открыта</string>
+    <string name="status_in_progress">В процессе</string>
+    <string name="status_completed">Завершена</string>
+    <string name="status_cancelled">Отменена</string>
+
+    <!-- Details Screen -->
+    <string name="request_details">Детали заявки</string>
+    <string name="edit">Редактировать</string>
+    <string name="request_not_found">Заявка не найдена</string>
+    <string name="label_description">Описание</string>
+    <string name="label_type">Тип помощи</string>
+    <string name="label_author">Автор</string>
+    <string name="label_contact">Контакты</string>
+    <string name="label_location">Местоположение</string>
+    <string name="label_created">Создана</string>
+    <string name="label_updated">Обновлена</string>
+    <string name="delete_request_title">Удаление заявки</string>
+    <string name="delete_request_desc">Вы уверены, что хотите удалить эту заявку? Это действие нельзя отменить.</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
+    <string name="action_cancel_request">Отменить заявку</string>
+    <string name="action_mark_completed">Отметить как выполненную</string>
+    <string name="action_reopen_request">Переоткрыть заявку</string>
+    <string name="action_delete_request">Удалить заявку</string>
+    <string name="action_accept_request">Принять заявку / Помочь</string>
+    <string name="action_decline_request">Отказаться / Перестать помогать</string>
+
+    <!-- Create and Edit Request Screens -->
+    <string name="new_request">Новая заявка</string>
+    <string name="edit_request">Редактировать заявку</string>
+    <string name="publish">Опубликовать</string>
+    <string name="save">Сохранить</string>
+    <string name="form_title">Название *</string>
+    <string name="form_description">Описание</string>
+    <string name="form_type">Тип помощи</string>
+    <string name="form_author">Ваше имя *</string>
+    <string name="form_contact">Контакты *</string>
+    <string name="form_coordinates">Координаты *</string>
+    <string name="form_coordinates_format">Широта: %1$s, Долгота: %2$s</string>
+    <string name="form_coordinates_placeholder">Не выбрано — нажмите для выбора</string>
+    <string name="form_location">Местоположение</string>
+    <string name="form_location_confirm">Подтвердить координаты</string>
+    <string name="form_location_close">Закрыть карту</string>
+
+    <!-- Authentication Screens -->
+    <string name="login_welcome">С возвращением, мы скучали!</string>
+    <string name="auth_email">Электронная почта</string>
+    <string name="auth_password">Пароль</string>
+    <string name="auth_forgot_password">Забыли пароль?</string>
+    <string name="auth_sign_in">Войти</string>
+    <string name="auth_create_account">Создать аккаунт</string>
+    <string name="auth_confirm_password">Подтвердите пароль</string>
+    <string name="auth_sign_up">Зарегистрироваться</string>
+    <string name="auth_already_have_account">Уже есть аккаунт? Войти</string>
+</resources>
