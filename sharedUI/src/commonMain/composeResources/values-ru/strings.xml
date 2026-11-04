@@ -79,4 +79,10 @@
     <string name="auth_confirm_password">Подтвердите пароль</string>
     <string name="auth_sign_up">Зарегистрироваться</string>
     <string name="auth_already_have_account">Уже есть аккаунт? Войти</string>
+    <string name="auth_error_email_required">Введите электронную почту</string>
+    <string name="auth_error_email_invalid">Неверный формат электронной почты</string>
+    <string name="auth_error_password_required">Введите пароль</string>
+    <string name="auth_error_password_too_short">Пароль должен содержать не менее 6 символов</string>
+    <string name="auth_error_confirm_required">Подтвердите пароль</string>
+    <string name="auth_error_passwords_mismatch">Пароли не совпадают</string>
 </resources>

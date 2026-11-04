@@ -79,4 +79,10 @@
     <string name="auth_confirm_password">Confirm password</string>
     <string name="auth_sign_up">Sign up</string>
     <string name="auth_already_have_account">Already have an account? Sign in</string>
+    <string name="auth_error_email_required">Email is required</string>
+    <string name="auth_error_email_invalid">Invalid email format</string>
+    <string name="auth_error_password_required">Password is required</string>
+    <string name="auth_error_password_too_short">Password must be at least 6 characters</string>
+    <string name="auth_error_confirm_required">Confirm your password</string>
+    <string name="auth_error_passwords_mismatch">Passwords do not match</string>
 </resources>

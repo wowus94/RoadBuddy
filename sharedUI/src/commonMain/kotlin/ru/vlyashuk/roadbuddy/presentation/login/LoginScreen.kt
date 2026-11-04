@@ -39,6 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import roadbuddy.sharedui.generated.resources.Res
 import roadbuddy.sharedui.generated.resources.*
+import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedString
 import ru.vlyashuk.roadbuddy.theme.GreenMain
 
 @Composable
@@ -89,7 +90,7 @@ fun LoginScreen(
                 ),
                 supportingText = {
                     state.emailError?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
+                        Text(it.toLocalizedString(), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 keyboardOptions = KeyboardOptions(
@@ -118,7 +119,7 @@ fun LoginScreen(
                 ),
                 supportingText = {
                     state.passwordError?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
+                        Text(it.toLocalizedString(), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 keyboardOptions = KeyboardOptions(
