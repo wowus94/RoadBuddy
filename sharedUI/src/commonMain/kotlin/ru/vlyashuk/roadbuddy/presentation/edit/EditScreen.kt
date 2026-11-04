@@ -1,9 +1,9 @@
 package ru.vlyashuk.roadbuddy.presentation.edit
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -12,13 +12,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.*
+import roadbuddy.sharedui.generated.resources.back
+import roadbuddy.sharedui.generated.resources.edit_request
+import roadbuddy.sharedui.generated.resources.ic_arrow_back
+import roadbuddy.sharedui.generated.resources.request_not_found
+import roadbuddy.sharedui.generated.resources.save
 import ru.vlyashuk.roadbuddy.presentation.components.RequestForm
+import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 @Composable
 fun EditScreen(
@@ -33,29 +39,41 @@ fun EditScreen(
     }
 
     Scaffold(
+        containerColor = RoadBuddyTheme.colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.edit_request)) },
-                navigationIcon = {
+                title = { 
                     Text(
-                        stringResource(Res.string.back),
-                        modifier = Modifier
-                            .clickable(onClick = onBack)
-                            .padding(horizontal = 16.dp)
-                    )
+                        text = stringResource(Res.string.edit_request),
+                        style = RoadBuddyTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    ) 
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_arrow_back),
+                            contentDescription = stringResource(Res.string.back),
+                            tint = RoadBuddyTheme.colors.primary
+                        )
+                    }
                 }
             )
         }
     ) { padding ->
         when {
-            state.isLoading -> CircularProgressIndicator(modifier = Modifier.padding(padding))
+            state.isLoading -> CircularProgressIndicator(
+                modifier = Modifier.padding(padding),
+                color = RoadBuddyTheme.colors.primary
+            )
             state.error != null -> Text(
                 text = state.error ?: "Unknown error",
-                color = MaterialTheme.colorScheme.error,
+                color = RoadBuddyTheme.colors.error,
+                style = RoadBuddyTheme.typography.bodyMedium,
                 modifier = Modifier.padding(padding)
             )
             state.request == null -> Text(
                 text = stringResource(Res.string.request_not_found),
+                style = RoadBuddyTheme.typography.bodyMedium,
                 modifier = Modifier.padding(padding)
             )
             else -> RequestForm(

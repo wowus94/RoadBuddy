@@ -5,19 +5,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,10 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import roadbuddy.sharedui.generated.resources.Res
 import roadbuddy.sharedui.generated.resources.*
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
 import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
+import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 @Composable
 fun RequestForm(
@@ -65,25 +65,30 @@ fun RequestForm(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(RoadBuddyTheme.spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.medium)
         ) {
-            OutlinedTextField(
+            RoadBuddyTextField(
                 value = title,
                 onValueChange = onTitleChange,
-                label = { Text(stringResource(Res.string.form_title)) },
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(Res.string.form_title),
+                singleLine = true
             )
 
-            OutlinedTextField(
+            RoadBuddyTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
-                label = { Text(stringResource(Res.string.form_description)) },
-                modifier = Modifier.fillMaxWidth(),
+                label = stringResource(Res.string.form_description),
+                singleLine = false,
                 minLines = 3
             )
 
-            Text(stringResource(Res.string.form_type), style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = stringResource(Res.string.form_type),
+                style = RoadBuddyTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = RoadBuddyTheme.spacing.extraSmall)
+            )
+            
             RequestType.entries.forEach { entry ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -93,32 +98,40 @@ fun RequestForm(
                         selected = entry == type,
                         onClick = { onTypeChange(entry) }
                     )
-                    Text(entry.toLocalizedName())
+                    Text(
+                        text = entry.toLocalizedName(),
+                        style = RoadBuddyTheme.typography.bodyLarge
+                    )
                 }
             }
 
-            OutlinedTextField(
+            RoadBuddyTextField(
                 value = authorName,
                 onValueChange = onAuthorNameChange,
-                label = { Text(stringResource(Res.string.form_author)) },
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(Res.string.form_author),
+                singleLine = true
             )
 
-            OutlinedTextField(
+            RoadBuddyTextField(
                 value = contact,
                 onValueChange = onContactChange,
-                label = { Text(stringResource(Res.string.form_contact)) },
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(Res.string.form_contact),
+                singleLine = true
             )
 
             if (error != null) {
                 Text(
                     text = error,
-                    color = MaterialTheme.colorScheme.error
+                    color = RoadBuddyTheme.colors.error,
+                    style = RoadBuddyTheme.typography.bodyMedium
                 )
             }
 
-            Text(stringResource(Res.string.form_coordinates), style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = stringResource(Res.string.form_coordinates),
+                style = RoadBuddyTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = RoadBuddyTheme.spacing.extraSmall)
+            )
 
             val locationText = if (latitude != null && longitude != null) {
                 stringResource(
@@ -130,22 +143,20 @@ fun RequestForm(
                 stringResource(Res.string.form_coordinates_placeholder)
             }
 
-            OutlinedTextField(
+            RoadBuddyTextField(
                 value = locationText,
                 onValueChange = {},
+                singleLine = true,
                 readOnly = true,
-                label = { Text(stringResource(Res.string.form_location)) },
+                label = stringResource(Res.string.form_location),
                 leadingIcon = {
                     Icon(
                         painter = painterResource(Res.drawable.ic_location_on),
-                        contentDescription = "Location"
+                        contentDescription = "Location",
+                        tint = RoadBuddyTheme.colors.primary.copy(alpha = 0.6f)
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                ),
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                     .also { interactionSource ->
                         LaunchedEffect(interactionSource) {
@@ -158,17 +169,14 @@ fun RequestForm(
                     }
             )
 
-            Button(
+            Spacer(modifier = Modifier.height(RoadBuddyTheme.spacing.extraSmall))
+
+            RoadBuddyButton(
+                text = buttonText,
                 onClick = onSubmit,
                 enabled = isValid && !isSaving,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator()
-                } else {
-                    Text(buttonText)
-                }
-            }
+                isLoading = isSaving
+            )
         }
 
         if (isMapOpen) {

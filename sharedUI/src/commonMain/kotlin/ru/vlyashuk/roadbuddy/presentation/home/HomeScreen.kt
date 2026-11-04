@@ -11,14 +11,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,12 +30,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import roadbuddy.sharedui.generated.resources.Res
+import roadbuddy.sharedui.generated.resources.cancel
 import roadbuddy.sharedui.generated.resources.filters
 import roadbuddy.sharedui.generated.resources.logout
+import roadbuddy.sharedui.generated.resources.logout_confirm_desc
+import roadbuddy.sharedui.generated.resources.logout_confirm_title
 import roadbuddy.sharedui.generated.resources.my_requests
 import roadbuddy.sharedui.generated.resources.newest_first
 import roadbuddy.sharedui.generated.resources.no_requests_match
@@ -45,6 +51,7 @@ import roadbuddy.sharedui.generated.resources.sort_newest
 import roadbuddy.sharedui.generated.resources.sort_oldest
 import ru.vlyashuk.roadbuddy.presentation.components.FilterBottomSheet
 import ru.vlyashuk.roadbuddy.presentation.components.RequestCard
+import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 @Composable
 fun HomeScreen(
@@ -55,32 +62,53 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var isFilterSheetOpen by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = RoadBuddyTheme.colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.road_buddy)) },
+                title = { 
+                    Text(
+                        text = stringResource(Res.string.road_buddy),
+                        style = RoadBuddyTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    ) 
+                },
                 actions = {
                     Text(
                         text = stringResource(Res.string.my_requests),
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = RoadBuddyTheme.spacing.medium)
                             .clickable(onClick = onNavigateToMyRequests),
-                        style = MaterialTheme.typography.labelLarge
+                        style = RoadBuddyTheme.typography.labelLarge.copy(
+                            color = RoadBuddyTheme.colors.primary,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
                     Text(
                         text = stringResource(Res.string.logout),
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .clickable { viewModel.signOut() },
-                        style = MaterialTheme.typography.labelLarge
+                            .padding(horizontal = RoadBuddyTheme.spacing.medium)
+                            .clickable { showLogoutDialog = true },
+                        style = RoadBuddyTheme.typography.labelLarge.copy(
+                            color = RoadBuddyTheme.colors.error,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToCreate) {
-                Text("+")
+            FloatingActionButton(
+                onClick = onNavigateToCreate,
+                containerColor = RoadBuddyTheme.colors.primary,
+                contentColor = RoadBuddyTheme.colors.onPrimary,
+                shape = androidx.compose.foundation.shape.CircleShape
+            ) {
+                Text(
+                    text = "+",
+                    style = RoadBuddyTheme.typography.titleLarge
+                )
             }
         }
     ) { padding ->
@@ -92,27 +120,32 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = RoadBuddyTheme.spacing.medium, vertical = RoadBuddyTheme.spacing.small),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.small)
             ) {
                 Text(
                     text = stringResource(Res.string.requests_found, state.requests.size.toString()),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = RoadBuddyTheme.typography.bodyMedium,
+                    color = RoadBuddyTheme.colors.onSurfaceVariant
                 )
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.small),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     var isSortMenuExpanded by remember { mutableStateOf(false) }
                     Box {
                         Button(
                             onClick = { isSortMenuExpanded = true },
-                            modifier = Modifier.height(32.dp),
+                            modifier = Modifier.height(36.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = RoadBuddyTheme.colors.secondaryContainer,
+                                contentColor = RoadBuddyTheme.colors.onSecondaryContainer
+                            ),
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                horizontal = 12.dp,
+                                horizontal = RoadBuddyTheme.spacing.medium,
                                 vertical = 4.dp
                             )
                         ) {
@@ -122,7 +155,7 @@ fun HomeScreen(
                                 } else {
                                     stringResource(Res.string.sort_oldest)
                                 },
-                                style = MaterialTheme.typography.labelMedium
+                                style = RoadBuddyTheme.typography.labelMedium
                             )
                         }
                         DropdownMenu(
@@ -130,14 +163,14 @@ fun HomeScreen(
                             onDismissRequest = { isSortMenuExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(Res.string.newest_first)) },
+                                text = { Text(stringResource(Res.string.newest_first), style = RoadBuddyTheme.typography.bodyMedium) },
                                 onClick = {
                                     viewModel.setSortOption(SortOption.NEWEST_FIRST)
                                     isSortMenuExpanded = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(stringResource(Res.string.oldest_first)) },
+                                text = { Text(stringResource(Res.string.oldest_first), style = RoadBuddyTheme.typography.bodyMedium) },
                                 onClick = {
                                     viewModel.setSortOption(SortOption.OLDEST_FIRST)
                                     isSortMenuExpanded = false
@@ -148,9 +181,14 @@ fun HomeScreen(
 
                     Button(
                         onClick = { isFilterSheetOpen = true },
-                        modifier = Modifier.height(32.dp),
+                        modifier = Modifier.height(36.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = RoadBuddyTheme.colors.secondaryContainer,
+                            contentColor = RoadBuddyTheme.colors.onSecondaryContainer
+                        ),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                            horizontal = 12.dp,
+                            horizontal = RoadBuddyTheme.spacing.medium,
                             vertical = 4.dp
                         )
                     ) {
@@ -162,7 +200,7 @@ fun HomeScreen(
                             } else {
                                 stringResource(Res.string.filters)
                             },
-                            style = MaterialTheme.typography.labelMedium
+                            style = RoadBuddyTheme.typography.labelMedium
                         )
                     }
                 }
@@ -174,10 +212,14 @@ fun HomeScreen(
                     .weight(1f)
             ) {
                 when {
-                    state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    state.isLoading -> CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = RoadBuddyTheme.colors.primary
+                    )
                     state.error != null -> Text(
                         text = state.error.orEmpty(),
-                        color = MaterialTheme.colorScheme.error,
+                        color = RoadBuddyTheme.colors.error,
+                        style = RoadBuddyTheme.typography.bodyMedium,
                         modifier = Modifier.align(Alignment.Center)
                     )
 
@@ -187,10 +229,15 @@ fun HomeScreen(
                         } else {
                             stringResource(Res.string.no_requests_yet)
                         },
+                        style = RoadBuddyTheme.typography.bodyMedium,
+                        color = RoadBuddyTheme.colors.onSurfaceVariant,
                         modifier = Modifier.align(Alignment.Center)
                     )
 
-                    else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    else -> LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = RoadBuddyTheme.spacing.large)
+                    ) {
                         items(state.requests) { request ->
                             RequestCard(
                                 request = request,
@@ -209,6 +256,29 @@ fun HomeScreen(
                 onTypeSelected = { viewModel.setTypeFilter(it) },
                 selectedStatus = state.selectedStatus,
                 onStatusSelected = { viewModel.setStatusFilter(it) }
+            )
+        }
+
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text(stringResource(Res.string.logout_confirm_title), style = RoadBuddyTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)) },
+                text = { Text(stringResource(Res.string.logout_confirm_desc), style = RoadBuddyTheme.typography.bodyMedium) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            viewModel.signOut()
+                        }
+                    ) {
+                        Text(stringResource(Res.string.logout), color = RoadBuddyTheme.colors.error, style = RoadBuddyTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text(stringResource(Res.string.cancel), style = RoadBuddyTheme.typography.labelLarge.copy(color = RoadBuddyTheme.colors.onSurfaceVariant))
+                    }
+                }
             )
         }
     }

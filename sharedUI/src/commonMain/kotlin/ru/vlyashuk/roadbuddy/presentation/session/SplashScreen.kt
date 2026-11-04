@@ -6,7 +6,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import ru.vlyashuk.roadbuddy.theme.GreenMain
+import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 @Composable
 fun SplashScreen() {
@@ -15,7 +15,7 @@ fun SplashScreen() {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = GreenMain
+            color = RoadBuddyTheme.colors.primary
         )
     }
 }

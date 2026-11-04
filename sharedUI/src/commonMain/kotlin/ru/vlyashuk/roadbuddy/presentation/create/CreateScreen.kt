@@ -1,7 +1,8 @@
 package ru.vlyashuk.roadbuddy.presentation.create
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -10,12 +11,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.*
+import roadbuddy.sharedui.generated.resources.back
+import roadbuddy.sharedui.generated.resources.ic_arrow_back
+import roadbuddy.sharedui.generated.resources.new_request
+import roadbuddy.sharedui.generated.resources.publish
 import ru.vlyashuk.roadbuddy.presentation.components.RequestForm
+import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 @Composable
 fun CreateScreen(
@@ -29,16 +35,23 @@ fun CreateScreen(
     }
 
     Scaffold(
+        containerColor = RoadBuddyTheme.colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.new_request)) },
-                navigationIcon = {
+                title = {
                     Text(
-                        stringResource(Res.string.back),
-                        modifier = Modifier
-                            .clickable(onClick = onBack)
-                            .padding(horizontal = 16.dp)
+                        text = stringResource(Res.string.new_request),
+                        style = RoadBuddyTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_arrow_back),
+                            contentDescription = stringResource(Res.string.back),
+                            tint = RoadBuddyTheme.colors.primary
+                        )
+                    }
                 }
             )
         }

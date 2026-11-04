@@ -2,6 +2,8 @@
     <string name="road_buddy">RoadBuddy</string>
     <string name="my_requests">My requests</string>
     <string name="logout">Logout</string>
+    <string name="logout_confirm_title">Confirm Logout</string>
+    <string name="logout_confirm_desc">Are you sure you want to log out of your account?</string>
     <string name="back">Back</string>
     <string name="filters">Filters</string>
     <string name="all_types">All types</string>

@@ -2,6 +2,8 @@
     <string name="road_buddy">RoadBuddy</string>
     <string name="my_requests">Мои заявки</string>
     <string name="logout">Выйти</string>
+    <string name="logout_confirm_title">Выход из аккаунта</string>
+    <string name="logout_confirm_desc">Вы уверены, что хотите выйти из своего аккаунта?</string>
     <string name="back">Назад</string>
     <string name="filters">Фильтры</string>
     <string name="all_types">Все типы</string>

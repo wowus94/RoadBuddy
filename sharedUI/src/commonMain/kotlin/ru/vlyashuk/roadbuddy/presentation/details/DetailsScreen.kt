@@ -14,8 +14,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,15 +32,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.jetbrains.compose.resources.stringResource
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.*
-import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
+import roadbuddy.sharedui.generated.resources.action_accept_request
+import roadbuddy.sharedui.generated.resources.action_cancel_request
+import roadbuddy.sharedui.generated.resources.action_decline_request
+import roadbuddy.sharedui.generated.resources.action_delete_request
+import roadbuddy.sharedui.generated.resources.action_mark_completed
+import roadbuddy.sharedui.generated.resources.action_reopen_request
+import roadbuddy.sharedui.generated.resources.back
+import roadbuddy.sharedui.generated.resources.cancel
+import roadbuddy.sharedui.generated.resources.delete
+import roadbuddy.sharedui.generated.resources.delete_request_desc
+import roadbuddy.sharedui.generated.resources.delete_request_title
+import roadbuddy.sharedui.generated.resources.edit
+import roadbuddy.sharedui.generated.resources.ic_arrow_back
+import roadbuddy.sharedui.generated.resources.label_author
+import roadbuddy.sharedui.generated.resources.label_contact
+import roadbuddy.sharedui.generated.resources.label_created
+import roadbuddy.sharedui.generated.resources.label_description
+import roadbuddy.sharedui.generated.resources.label_location
+import roadbuddy.sharedui.generated.resources.label_type
+import roadbuddy.sharedui.generated.resources.label_updated
+import roadbuddy.sharedui.generated.resources.request_details
+import roadbuddy.sharedui.generated.resources.request_not_found
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
+import ru.vlyashuk.roadbuddy.presentation.util.toLocalizedName
+import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 import ru.vlyashuk.roadbuddy.utils.DateTimeConverter
 import ru.vlyashuk.roadbuddy.utils.rememberOpenMapAction
 
@@ -58,26 +84,35 @@ fun DetailsScreen(
     }
 
     Scaffold(
+        containerColor = RoadBuddyTheme.colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.request_details)) },
-                navigationIcon = {
+                title = { 
                     Text(
-                        text = "←",
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .clickable(onClick = onBack),
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                        text = stringResource(Res.string.request_details),
+                        style = RoadBuddyTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    ) 
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_arrow_back),
+                            contentDescription = stringResource(Res.string.back),
+                            tint = RoadBuddyTheme.colors.primary
+                        )
+                    }
                 },
                 actions = {
                     if (state.isOwner) {
                         Text(
                             text = stringResource(Res.string.edit),
                             modifier = Modifier
-                                .padding(horizontal = 16.dp)
+                                .padding(horizontal = RoadBuddyTheme.spacing.medium)
                                 .clickable { onNavigateToEdit(requestId) },
-                            style = MaterialTheme.typography.labelLarge
+                            style = RoadBuddyTheme.typography.labelLarge.copy(
+                                color = RoadBuddyTheme.colors.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         )
                     }
                 }
@@ -90,15 +125,21 @@ fun DetailsScreen(
                 .padding(padding)
         ) {
             when {
-                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                state.isLoading -> CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = RoadBuddyTheme.colors.primary
+                )
                 state.error != null -> Text(
                     text = state.error.toString(),
-                    color = MaterialTheme.colorScheme.error,
+                    color = RoadBuddyTheme.colors.error,
+                    style = RoadBuddyTheme.typography.bodyMedium,
                     modifier = Modifier.align(Alignment.Center)
                 )
 
                 state.request == null -> Text(
                     text = stringResource(Res.string.request_not_found),
+                    style = RoadBuddyTheme.typography.bodyMedium,
+                    color = RoadBuddyTheme.colors.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Center)
                 )
                 else -> RequestDetails(
@@ -114,7 +155,7 @@ fun DetailsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
+                        .padding(RoadBuddyTheme.spacing.medium)
                 )
             }
         }
@@ -139,11 +180,12 @@ private fun RequestDetails(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.medium)
     ) {
         Text(
             text = request.title,
-            style = MaterialTheme.typography.headlineMedium
+            style = RoadBuddyTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = RoadBuddyTheme.colors.onBackground
         )
 
         StatusBadge(status = request.status)
@@ -178,8 +220,8 @@ private fun RequestDetails(
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
-                    title = { Text(stringResource(Res.string.delete_request_title)) },
-                    text = { Text(stringResource(Res.string.delete_request_desc)) },
+                    title = { Text(stringResource(Res.string.delete_request_title), style = RoadBuddyTheme.typography.titleMedium) },
+                    text = { Text(stringResource(Res.string.delete_request_desc), style = RoadBuddyTheme.typography.bodyMedium) },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -187,20 +229,20 @@ private fun RequestDetails(
                                 onDeleteClick()
                             }
                         ) {
-                            Text(stringResource(Res.string.delete), color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(Res.string.delete), color = RoadBuddyTheme.colors.error, style = RoadBuddyTheme.typography.labelLarge)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDeleteDialog = false }) {
-                            Text(stringResource(Res.string.cancel))
+                            Text(stringResource(Res.string.cancel), style = RoadBuddyTheme.typography.labelLarge)
                         }
                     }
                 )
             }
 
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = RoadBuddyTheme.spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.small)
             ) {
                 when (request.status) {
                     RequestStatus.OPEN -> {
@@ -208,17 +250,17 @@ private fun RequestDetails(
                             onClick = { onStatusUpdateClick(RequestStatus.CANCELLED) },
                             enabled = !isStatusUpdating && !isDeleting,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                containerColor = RoadBuddyTheme.colors.errorContainer,
+                                contentColor = RoadBuddyTheme.colors.onErrorContainer
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             if (isStatusUpdating) {
                                 CircularProgressIndicator(
                                     modifier = Modifier
-                                        .padding(end = 8.dp)
+                                        .padding(end = RoadBuddyTheme.spacing.small)
                                         .size(20.dp),
-                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                    color = RoadBuddyTheme.colors.onErrorContainer
                                 )
                             }
                             Text(stringResource(Res.string.action_cancel_request))
@@ -229,17 +271,17 @@ private fun RequestDetails(
                             onClick = { onStatusUpdateClick(RequestStatus.COMPLETED) },
                             enabled = !isStatusUpdating && !isDeleting,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                containerColor = RoadBuddyTheme.colors.primary,
+                                contentColor = RoadBuddyTheme.colors.onPrimary
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             if (isStatusUpdating) {
                                 CircularProgressIndicator(
                                     modifier = Modifier
-                                        .padding(end = 8.dp)
+                                        .padding(end = RoadBuddyTheme.spacing.small)
                                         .size(20.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = RoadBuddyTheme.colors.onPrimary
                                 )
                             }
                             Text(stringResource(Res.string.action_mark_completed))
@@ -249,17 +291,17 @@ private fun RequestDetails(
                             onClick = { onStatusUpdateClick(RequestStatus.CANCELLED) },
                             enabled = !isStatusUpdating && !isDeleting,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                containerColor = RoadBuddyTheme.colors.errorContainer,
+                                contentColor = RoadBuddyTheme.colors.onErrorContainer
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             if (isStatusUpdating) {
                                 CircularProgressIndicator(
                                     modifier = Modifier
-                                        .padding(end = 8.dp)
+                                        .padding(end = RoadBuddyTheme.spacing.small)
                                         .size(20.dp),
-                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                    color = RoadBuddyTheme.colors.onErrorContainer
                                 )
                             }
                             Text(stringResource(Res.string.action_cancel_request))
@@ -269,13 +311,18 @@ private fun RequestDetails(
                         Button(
                             onClick = { onStatusUpdateClick(RequestStatus.OPEN) },
                             enabled = !isStatusUpdating && !isDeleting,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = RoadBuddyTheme.colors.primary,
+                                contentColor = RoadBuddyTheme.colors.onPrimary
+                            ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             if (isStatusUpdating) {
                                 CircularProgressIndicator(
                                     modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(20.dp)
+                                        .padding(end = RoadBuddyTheme.spacing.small)
+                                        .size(20.dp),
+                                    color = RoadBuddyTheme.colors.onPrimary
                                 )
                             }
                             Text(stringResource(Res.string.action_reopen_request))
@@ -287,16 +334,16 @@ private fun RequestDetails(
                     onClick = { showDeleteDialog = true },
                     enabled = !isStatusUpdating && !isDeleting,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
+                        contentColor = RoadBuddyTheme.colors.error
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (isDeleting) {
                         CircularProgressIndicator(
                             modifier = Modifier
-                                .padding(end = 8.dp)
+                                .padding(end = RoadBuddyTheme.spacing.small)
                                 .size(20.dp),
-                            color = MaterialTheme.colorScheme.error
+                            color = RoadBuddyTheme.colors.error
                         )
                     }
                     Text(stringResource(Res.string.action_delete_request))
@@ -304,8 +351,8 @@ private fun RequestDetails(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = RoadBuddyTheme.spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.small)
             ) {
                 when (request.status) {
                     RequestStatus.OPEN -> {
@@ -313,17 +360,17 @@ private fun RequestDetails(
                             onClick = { onStatusUpdateClick(RequestStatus.IN_PROGRESS) },
                             enabled = !isStatusUpdating,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                containerColor = RoadBuddyTheme.colors.primary,
+                                contentColor = RoadBuddyTheme.colors.onPrimary
                             ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             if (isStatusUpdating) {
                                 CircularProgressIndicator(
                                     modifier = Modifier
-                                        .padding(end = 8.dp)
+                                        .padding(end = RoadBuddyTheme.spacing.small)
                                         .size(20.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = RoadBuddyTheme.colors.onPrimary
                                 )
                             }
                             Text(stringResource(Res.string.action_accept_request))
@@ -335,17 +382,17 @@ private fun RequestDetails(
                                 onClick = { onStatusUpdateClick(RequestStatus.COMPLETED) },
                                 enabled = !isStatusUpdating,
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary,
-                                    contentColor = MaterialTheme.colorScheme.onSecondary
+                                    containerColor = RoadBuddyTheme.colors.secondary,
+                                    contentColor = RoadBuddyTheme.colors.onSecondary
                                 ),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 if (isStatusUpdating) {
                                     CircularProgressIndicator(
                                         modifier = Modifier
-                                            .padding(end = 8.dp)
+                                            .padding(end = RoadBuddyTheme.spacing.small)
                                             .size(20.dp),
-                                        color = MaterialTheme.colorScheme.onSecondary
+                                        color = RoadBuddyTheme.colors.onSecondary
                                     )
                                 }
                                 Text(stringResource(Res.string.action_mark_completed))
@@ -355,16 +402,16 @@ private fun RequestDetails(
                                 onClick = { onStatusUpdateClick(RequestStatus.OPEN) },
                                 enabled = !isStatusUpdating,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
+                                    contentColor = RoadBuddyTheme.colors.error
                                 ),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 if (isStatusUpdating) {
                                     CircularProgressIndicator(
                                         modifier = Modifier
-                                            .padding(end = 8.dp)
+                                            .padding(end = RoadBuddyTheme.spacing.small)
                                             .size(20.dp),
-                                        color = MaterialTheme.colorScheme.error
+                                        color = RoadBuddyTheme.colors.error
                                     )
                                 }
                                 Text(stringResource(Res.string.action_decline_request))
@@ -381,16 +428,22 @@ private fun RequestDetails(
 @Composable
 private fun StatusBadge(status: RequestStatus) {
     val color = when (status) {
-        RequestStatus.OPEN -> MaterialTheme.colorScheme.primary
-        RequestStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiary
-        RequestStatus.COMPLETED -> MaterialTheme.colorScheme.secondary
-        RequestStatus.CANCELLED -> MaterialTheme.colorScheme.error
+        RequestStatus.OPEN -> RoadBuddyTheme.colors.primary
+        RequestStatus.IN_PROGRESS -> RoadBuddyTheme.colors.tertiary
+        RequestStatus.COMPLETED -> RoadBuddyTheme.colors.secondary
+        RequestStatus.CANCELLED -> RoadBuddyTheme.colors.error
     }
-    Card {
+    Card(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = color.copy(alpha = 0.12f)
+        )
+    ) {
         Text(
             text = status.toLocalizedName(),
             color = color,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            style = RoadBuddyTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(horizontal = RoadBuddyTheme.spacing.medium, vertical = RoadBuddyTheme.spacing.small)
         )
     }
 }
@@ -404,12 +457,13 @@ private fun DetailItem(
     Column(modifier = modifier) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = RoadBuddyTheme.typography.labelMedium,
+            color = RoadBuddyTheme.colors.onSurfaceVariant.copy(alpha = 0.8f)
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyLarge
+            style = RoadBuddyTheme.typography.bodyLarge,
+            color = RoadBuddyTheme.colors.onSurface
         )
     }
 }
