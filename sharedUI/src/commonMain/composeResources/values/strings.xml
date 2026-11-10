@@ -18,6 +18,12 @@
     <string name="no_requests_match">No requests match your filters</string>
     <string name="no_requests_yet">No requests yet</string>
     <string name="you_have_no_requests_yet">You have no requests yet</string>
+    <string name="near_me">Near me</string>
+    <string name="radius_km">Radius: %1$s km</string>
+    <string name="map">Map</string>
+    <string name="requests_map">Requests map</string>
+    <string name="you_are_here">You</string>
+    <string name="requests_without_location">%1$d request(s) have no location and can\'t be shown on the map</string>
 
     <!-- Request Types -->
     <string name="type_towing">Towing</string>

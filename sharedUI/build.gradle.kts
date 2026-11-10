@@ -67,6 +67,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.yandex.mapkit)
+            implementation(libs.androidx.activityCompose)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
             implementation(project.dependencies.platform(libs.firebase.bom))
