@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -41,6 +42,9 @@ import roadbuddy.sharedui.generated.resources.logout
 import roadbuddy.sharedui.generated.resources.logout_confirm_desc
 import roadbuddy.sharedui.generated.resources.logout_confirm_title
 import roadbuddy.sharedui.generated.resources.my_requests
+import roadbuddy.sharedui.generated.resources.near_me
+import roadbuddy.sharedui.generated.resources.map
+import roadbuddy.sharedui.generated.resources.radius_km
 import roadbuddy.sharedui.generated.resources.newest_first
 import roadbuddy.sharedui.generated.resources.no_requests_match
 import roadbuddy.sharedui.generated.resources.no_requests_yet
@@ -51,6 +55,7 @@ import roadbuddy.sharedui.generated.resources.sort_newest
 import roadbuddy.sharedui.generated.resources.sort_oldest
 import ru.vlyashuk.roadbuddy.presentation.components.FilterBottomSheet
 import ru.vlyashuk.roadbuddy.presentation.components.RequestCard
+import ru.vlyashuk.roadbuddy.presentation.location.rememberLocationPermissionRequester
 import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 @Composable
@@ -58,11 +63,16 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     onNavigateToDetails: (String) -> Unit = {},
     onNavigateToCreate: () -> Unit = {},
-    onNavigateToMyRequests: () -> Unit = {}
+    onNavigateToMyRequests: () -> Unit = {},
+    onNavigateToMap: (Double, Double, Double) -> Unit = { _, _, _ -> }
 ) {
     val state by viewModel.uiState.collectAsState()
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
+
+    val requestLocationPermission = rememberLocationPermissionRequester(
+        onGranted = { viewModel.locateNearMe() }
+    )
 
     Scaffold(
         containerColor = RoadBuddyTheme.colors.background,
@@ -131,6 +141,126 @@ fun HomeScreen(
                 )
 
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = {
+                            if (state.nearby.enabled) {
+                                viewModel.setNearbyEnabled(false)
+                            } else if (!state.nearby.isLocating) {
+                                requestLocationPermission()
+                            }
+                        },
+                        enabled = !state.nearby.isLocating,
+                        modifier = Modifier.height(36.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (state.nearby.enabled) {
+                                RoadBuddyTheme.colors.primary
+                            } else {
+                                RoadBuddyTheme.colors.secondaryContainer
+                            },
+                            contentColor = if (state.nearby.enabled) {
+                                RoadBuddyTheme.colors.onPrimary
+                            } else {
+                                RoadBuddyTheme.colors.onSecondaryContainer
+                            }
+                        ),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = RoadBuddyTheme.spacing.medium,
+                            vertical = 4.dp
+                        )
+                    ) {
+                        if (state.nearby.isLocating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = RoadBuddyTheme.colors.onSecondaryContainer,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(Res.string.near_me),
+                                style = RoadBuddyTheme.typography.labelMedium
+                            )
+                        }
+                    }
+
+                    if (state.nearby.enabled) {
+                        var isRadiusMenuExpanded by remember { mutableStateOf(false) }
+                        Box {
+                            Button(
+                                onClick = { isRadiusMenuExpanded = true },
+                                modifier = Modifier.height(36.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = RoadBuddyTheme.colors.secondaryContainer,
+                                    contentColor = RoadBuddyTheme.colors.onSecondaryContainer
+                                ),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                    horizontal = RoadBuddyTheme.spacing.medium,
+                                    vertical = 4.dp
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        Res.string.radius_km,
+                                        state.nearby.radiusKm.toInt().toString()
+                                    ),
+                                    style = RoadBuddyTheme.typography.labelMedium
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = isRadiusMenuExpanded,
+                                onDismissRequest = { isRadiusMenuExpanded = false }
+                            ) {
+                                listOf(5.0, 10.0, 25.0, 50.0).forEach { km ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                stringResource(Res.string.radius_km, km.toInt().toString()),
+                                                style = RoadBuddyTheme.typography.bodyMedium
+                                            )
+                                        },
+                                        onClick = {
+                                            viewModel.setRadiusKm(km)
+                                            isRadiusMenuExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Button(
+                        onClick = {
+                            onNavigateToMap(
+                                state.nearby.centerLat ?: 0.0,
+                                state.nearby.centerLon ?: 0.0,
+                                if (state.nearby.enabled) state.nearby.radiusKm else 0.0
+                            )
+                        },
+                        modifier = Modifier.height(36.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = RoadBuddyTheme.colors.secondaryContainer,
+                            contentColor = RoadBuddyTheme.colors.onSecondaryContainer
+                        ),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = RoadBuddyTheme.spacing.medium,
+                            vertical = 4.dp
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.map),
+                            style = RoadBuddyTheme.typography.labelMedium
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(RoadBuddyTheme.spacing.small),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

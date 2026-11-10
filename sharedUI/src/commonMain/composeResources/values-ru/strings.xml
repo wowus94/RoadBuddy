@@ -18,6 +18,12 @@
     <string name="no_requests_match">Нет заявок, соответствующих фильтрам</string>
     <string name="no_requests_yet">Заявок пока нет</string>
     <string name="you_have_no_requests_yet">У вас пока нет созданных заявок</string>
+    <string name="near_me">Рядом со мной</string>
+    <string name="radius_km">Радиус: %1$s км</string>
+    <string name="map">Карта</string>
+    <string name="requests_map">Карта заявок</string>
+    <string name="you_are_here">Вы</string>
+    <string name="requests_without_location">Заявок без геолокации: %1$d — их нельзя показать на карте</string>
     
     <!-- Request Types -->
     <string name="type_towing">Буксировка</string>

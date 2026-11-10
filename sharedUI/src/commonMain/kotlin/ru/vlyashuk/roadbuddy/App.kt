@@ -31,6 +31,7 @@ import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.login.LoginScreen
+import ru.vlyashuk.roadbuddy.presentation.map.RequestsMapScreen
 import ru.vlyashuk.roadbuddy.presentation.myrequests.MyRequestsScreen
 import ru.vlyashuk.roadbuddy.presentation.navigation.Route
 import ru.vlyashuk.roadbuddy.presentation.register.RegisterScreen
@@ -126,7 +127,10 @@ fun App(
                             HomeScreen(
                                 onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
                                 onNavigateToCreate = { backStack.add(Route.Create) },
-                                onNavigateToMyRequests = { backStack.add(Route.MyRequests) }
+                                onNavigateToMyRequests = { backStack.add(Route.MyRequests) },
+                                onNavigateToMap = { lat, lon, radius ->
+                                    backStack.add(Route.RequestsMap(lat, lon, radius))
+                                }
                             )
                         }
                         entry<Route.MyRequests> {
@@ -151,6 +155,15 @@ fun App(
                         entry<Route.Create> {
                             CreateScreen(
                                 onBack = { backStack.removeLastOrNull() }
+                            )
+                        }
+                        entry<Route.RequestsMap> { key ->
+                            RequestsMapScreen(
+                                centerLat = key.latitude,
+                                centerLon = key.longitude,
+                                radiusKm = key.radiusKm,
+                                onBack = { backStack.removeLastOrNull() },
+                                onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
                             )
                         }
                     }

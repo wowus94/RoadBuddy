@@ -22,4 +22,10 @@ sealed interface Route : NavKey {
     data object MyRequests : Route
     @Serializable
     data class Edit(val requestId: String) : Route
+    @Serializable
+    data class RequestsMap(
+        val latitude: Double = 0.0,
+        val longitude: Double = 0.0,
+        val radiusKm: Double = 0.0
+    ) : Route
 }

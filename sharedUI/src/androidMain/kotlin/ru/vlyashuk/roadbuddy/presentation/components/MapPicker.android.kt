@@ -2,6 +2,9 @@ package ru.vlyashuk.roadbuddy.presentation.components
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,21 +43,42 @@ import com.yandex.mapkit.location.LocationListener
 import com.yandex.mapkit.location.LocationStatus
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
+import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
+import com.yandex.runtime.image.ImageProvider
 import org.jetbrains.compose.resources.painterResource
 import roadbuddy.sharedui.generated.resources.Res
 import roadbuddy.sharedui.generated.resources.ic_add
 import roadbuddy.sharedui.generated.resources.ic_remove
 import java.lang.ref.WeakReference
 import kotlin.math.hypot
+import kotlin.math.ln
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.core.graphics.createBitmap
 
 private const val MAPKIT_META_KEY = "ru.vlyashuk.roadbuddy.MAPKIT_API_KEY"
 private const val DEFAULT_LAT = 55.7558
 private const val DEFAULT_LON = 37.6173
 private const val ZOOM = 15f
+private const val MARKER_COLOR = 0xFFE53935.toInt()
+
+private fun createMarkerBitmap(): Bitmap {
+    val size = 48
+    val bitmap = createBitmap(size, size)
+    val canvas = Canvas(bitmap)
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = MARKER_COLOR }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f, fill)
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, stroke)
+    return bitmap
+}
 private var mapKitInitialized = false
-private fun initMapKit(context: Context) {
+internal fun initMapKit(context: Context) {
     if (mapKitInitialized) return
     val info = if (Build.VERSION.SDK_INT >= 33) {
         context.packageManager.getApplicationInfo(
@@ -77,7 +103,10 @@ actual fun MapPicker(
     latitude: Double?,
     longitude: Double?,
     onLocationSelected: (lat: Double, lon: Double) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
+    markers: List<MapMarker>,
+    onMarkerClick: (id: String) -> Unit,
+    focusPoints: List<Pair<Double, Double>>
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -101,6 +130,59 @@ actual fun MapPicker(
         val ref = WeakReference(cameraListener)
         map.addCameraListener(ref)
         onDispose { map.removeCameraListener(ref) }
+    }
+
+    val placemarks = remember { mutableMapOf<String, PlacemarkMapObject>() }
+    val markerBitmap = remember { createMarkerBitmap() }
+    val currentOnMarkerClick by rememberUpdatedState(onMarkerClick)
+
+    LaunchedEffect(markers) {
+        val wantedIds = markers.mapTo(HashSet()) { it.id }
+        placemarks.keys.filter { it !in wantedIds }.forEach { id ->
+            placemarks.remove(id)?.let { map.mapObjects.remove(it) }
+        }
+        markers.forEach { marker ->
+            val placemark = placemarks[marker.id] ?: run {
+                val created = map.mapObjects.addPlacemark()
+                created.addTapListener(
+                    WeakReference(
+                        MapObjectTapListener { _, _ ->
+                            currentOnMarkerClick(marker.id)
+                            true
+                        }
+                    )
+                )
+                placemarks[marker.id] = created
+                created
+            }
+            placemark.geometry = Point(marker.latitude, marker.longitude)
+            placemark.setIcon(ImageProvider.fromBitmap(markerBitmap))
+        }
+    }
+
+    LaunchedEffect(focusPoints) {
+        if (focusPoints.isEmpty()) return@LaunchedEffect
+        if (focusPoints.size == 1) {
+            val (lat, lon) = focusPoints.first()
+            map.move(
+                CameraPosition(Point(lat, lon), ZOOM, 0f, 0f),
+                Animation(Animation.Type.SMOOTH, 0.3f),
+                null
+            )
+            return@LaunchedEffect
+        }
+        val minLat = focusPoints.minOf { it.first }
+        val maxLat = focusPoints.maxOf { it.first }
+        val minLon = focusPoints.minOf { it.second }
+        val maxLon = focusPoints.maxOf { it.second }
+        val center = Point((minLat + maxLat) / 2.0, (minLon + maxLon) / 2.0)
+        val lonSpan = (maxLon - minLon).coerceAtLeast(0.01) * 1.4
+        val zoom = (ln(360.0 / lonSpan) / ln(2.0)).toFloat().coerceIn(3f, 17f)
+        map.move(
+            CameraPosition(center, zoom, 0f, 0f),
+            Animation(Animation.Type.SMOOTH, 0.3f),
+            null
+        )
     }
 
     DisposableEffect(lifecycleOwner, mapView) {
@@ -147,7 +229,8 @@ actual fun MapPicker(
         }
     }
 
-    LaunchedEffect(latitude, longitude, locationManager, locationListener) {
+    LaunchedEffect(latitude, longitude, locationManager, locationListener, focusPoints.isEmpty()) {
+        if (focusPoints.isNotEmpty()) return@LaunchedEffect
         if (latitude == null || longitude == null) {
             val defaultTarget = Point(DEFAULT_LAT, DEFAULT_LON)
             map.move(

@@ -31,6 +31,7 @@ import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
 import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
+import ru.vlyashuk.roadbuddy.presentation.map.RequestsMapViewModel
 import ru.vlyashuk.roadbuddy.presentation.myrequests.MyRequestsViewModel
 import ru.vlyashuk.roadbuddy.presentation.register.RegisterViewModel
 import ru.vlyashuk.roadbuddy.presentation.session.SessionViewModel
@@ -76,5 +77,8 @@ val appModule = module {
     }
     viewModel { (requestId: String) ->
         EditViewModel(get(), get(), requestId)
+    }
+    viewModel { (centerLat: Double, centerLon: Double, radiusKm: Double) ->
+        RequestsMapViewModel(get(), centerLat, centerLon, radiusKm)
     }
 }
