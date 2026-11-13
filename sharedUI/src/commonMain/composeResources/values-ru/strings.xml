@@ -23,6 +23,8 @@
     <string name="map">Карта</string>
     <string name="requests_map">Карта заявок</string>
     <string name="you_are_here">Вы</string>
+    <string name="offline_indicator">Нет подключения к интернету</string>
+    <string name="retry">Повторить</string>
     <string name="requests_without_location">Заявок без геолокации: %1$d — их нельзя показать на карте</string>
     
     <!-- Request Types -->

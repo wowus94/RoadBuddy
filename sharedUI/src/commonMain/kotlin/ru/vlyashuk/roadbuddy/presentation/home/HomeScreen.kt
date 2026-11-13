@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,6 +52,7 @@ import roadbuddy.sharedui.generated.resources.no_requests_match
 import roadbuddy.sharedui.generated.resources.no_requests_yet
 import roadbuddy.sharedui.generated.resources.oldest_first
 import roadbuddy.sharedui.generated.resources.requests_found
+import roadbuddy.sharedui.generated.resources.retry
 import roadbuddy.sharedui.generated.resources.road_buddy
 import roadbuddy.sharedui.generated.resources.sort_newest
 import roadbuddy.sharedui.generated.resources.sort_oldest
@@ -337,22 +339,37 @@ fun HomeScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { viewModel.refresh() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
+            ) {
+            Box(
+                modifier = Modifier.fillMaxSize()
             ) {
                 when {
                     state.isLoading -> CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
                         color = RoadBuddyTheme.colors.primary
                     )
-                    state.error != null -> Text(
-                        text = state.error.orEmpty(),
-                        color = RoadBuddyTheme.colors.error,
-                        style = RoadBuddyTheme.typography.bodyMedium,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    state.error != null -> Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = state.error.orEmpty(),
+                            color = RoadBuddyTheme.colors.error,
+                            style = RoadBuddyTheme.typography.bodyMedium
+                        )
+                        TextButton(onClick = { viewModel.refresh() }) {
+                            Text(
+                                text = stringResource(Res.string.retry),
+                                color = RoadBuddyTheme.colors.primary
+                            )
+                        }
+                    }
 
                     state.requests.isEmpty() -> Text(
                         text = if (state.selectedType != null || state.selectedStatus != null) {
@@ -399,6 +416,7 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
             }
         }
 

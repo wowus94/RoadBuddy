@@ -21,6 +21,7 @@ import ru.vlyashuk.roadbuddy.presentation.home.SortOption
 data class MyRequestsUiState(
     val requests: List<RoadRequest> = emptyList(),
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val error: String? = null,
     val selectedType: RequestType? = null,
     val selectedStatus: RequestStatus? = null,
@@ -37,6 +38,7 @@ class MyRequestsViewModel(
     private val _selectedStatus = MutableStateFlow<RequestStatus?>(null)
     private val _sortOption = MutableStateFlow<SortOption>(SortOption.NEWEST_FIRST)
     private val _isLoading = MutableStateFlow(false)
+    private val _isRefreshing = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
 
     @Suppress("UNCHECKED_CAST")
@@ -46,6 +48,7 @@ class MyRequestsViewModel(
         _selectedStatus,
         _sortOption,
         _isLoading,
+        _isRefreshing,
         _error
     ) { array ->
         val raw = array[0] as List<RoadRequest>
@@ -53,7 +56,8 @@ class MyRequestsViewModel(
         val status = array[2] as RequestStatus?
         val sort = array[3] as SortOption
         val loading = array[4] as Boolean
-        val err = array[5] as String?
+        val refreshing = array[5] as Boolean
+        val err = array[6] as String?
 
         val filtered = raw.filter { request ->
             (type == null || request.type == type) &&
@@ -66,6 +70,7 @@ class MyRequestsViewModel(
         MyRequestsUiState(
             requests = sorted,
             isLoading = loading,
+            isRefreshing = refreshing,
             error = err,
             selectedType = type,
             selectedStatus = status,
@@ -78,10 +83,6 @@ class MyRequestsViewModel(
     )
 
     init {
-        loadRequests()
-    }
-
-    fun loadRequests() {
         viewModelScope.launch { refreshRequestsUseCase() }
         viewModelScope.launch {
             getMyRequestsUseCase()
@@ -98,6 +99,14 @@ class MyRequestsViewModel(
                         }
                     }
                 }
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            refreshRequestsUseCase()
+            _isRefreshing.value = false
         }
     }
 
