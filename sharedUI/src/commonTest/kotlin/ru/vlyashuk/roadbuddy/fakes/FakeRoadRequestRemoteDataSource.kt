@@ -13,10 +13,13 @@ class FakeRoadRequestRemoteDataSource : RoadRequestRemoteDataSource {
     var requestsError: Throwable? = null
     var createError: Throwable? = null
     var updateError: Throwable? = null
+    var deleteError: Throwable? = null
 
     var createdRequest: RoadRequest? = null
         private set
     var updatedRequest: RoadRequest? = null
+        private set
+    var deletedId: String? = null
         private set
 
     fun emit(requests: List<RoadRequest>) {
@@ -27,12 +30,6 @@ class FakeRoadRequestRemoteDataSource : RoadRequestRemoteDataSource {
         requestsFlow.map { requests ->
             requestsError?.let { throw it }
             requests
-        }
-
-    override fun getRequestsByAuthor(authorId: String): Flow<List<RoadRequest>> =
-        requestsFlow.map { requests ->
-            requestsError?.let { throw it }
-            requests.filter { it.authorId == authorId }
         }
 
     override fun getRequest(id: String): Flow<RoadRequest?> =
@@ -51,5 +48,8 @@ class FakeRoadRequestRemoteDataSource : RoadRequestRemoteDataSource {
         updatedRequest = request
     }
 
-    override suspend fun deleteRequest(id: String) = Unit
+    override suspend fun deleteRequest(id: String) {
+        deleteError?.let { throw it }
+        deletedId = id
+    }
 }

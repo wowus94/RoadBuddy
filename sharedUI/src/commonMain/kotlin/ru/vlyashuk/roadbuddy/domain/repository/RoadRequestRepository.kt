@@ -10,16 +10,19 @@ interface RoadRequestRepository {
     fun getRequests(): Flow<AppResult<List<RoadRequest>>>
     fun observeRequestsPage(
         pageSize: Int,
+        offset: Int,
         query: RequestsPageQuery
     ): Flow<AppResult<RequestsPage>>
     suspend fun getRequestsPage(
         pageSize: Int,
-        cursorId: String?,
+        offset: Int,
         query: RequestsPageQuery
     ): AppResult<RequestsPage>
     fun getMyRequests(): Flow<AppResult<List<RoadRequest>>>
-    suspend fun createRequest(request: RoadRequest): AppResult<Unit>
     fun getRequest(id: String): Flow<AppResult<RoadRequest?>>
+    suspend fun refreshRequests(): AppResult<Unit>
+    suspend fun refreshRequest(id: String): AppResult<Unit>
+    suspend fun createRequest(request: RoadRequest): AppResult<Unit>
     suspend fun updateRequest(request: RoadRequest): AppResult<Unit>
     suspend fun updateRequestStatus(request: RoadRequest): AppResult<Unit>
     suspend fun deleteRequest(id: String): AppResult<Unit>

@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.error.AppError
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
@@ -19,6 +20,7 @@ import ru.vlyashuk.roadbuddy.presentation.error.toMessage
 class EditViewModel(
     private val getRequestByIdUseCase: GetRequestByIdUseCase,
     private val updateRequestUseCase: UpdateRequestUseCase,
+    private val refreshRequestUseCase: RefreshRequestUseCase,
     private val requestId: String
 ) : ViewModel() {
 
@@ -32,6 +34,7 @@ class EditViewModel(
     private fun loadRequest() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            refreshRequestUseCase(requestId)
             try {
                 when (val result = getRequestByIdUseCase(requestId).first()) {
                     is AppResult.Failure -> {

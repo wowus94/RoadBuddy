@@ -21,6 +21,8 @@ import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.ObserveRequestsPageUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestStatusUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
@@ -63,6 +65,8 @@ val appModule = module {
     factoryOf(::UpdateRequestUseCase)
     factoryOf(::UpdateRequestStatusUseCase)
     factoryOf(::DeleteRequestUseCase)
+    factoryOf(::RefreshRequestsUseCase)
+    factoryOf(::RefreshRequestUseCase)
     factoryOf(::SignInUseCase)
     factoryOf(::SignUpUseCase)
     factoryOf(::SignOutUseCase)
@@ -77,12 +81,12 @@ val appModule = module {
     viewModelOf(::MyRequestsViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
-        DetailsViewModel(get(), get(), get(), get(), requestId)
+        DetailsViewModel(get(), get(), get(), get(), get(), requestId)
     }
     viewModel { (requestId: String) ->
-        EditViewModel(get(), get(), requestId)
+        EditViewModel(get(), get(), get(), requestId)
     }
     viewModel { (centerLat: Double, centerLon: Double, radiusKm: Double) ->
-        RequestsMapViewModel(get(), centerLat, centerLon, radiusKm)
+        RequestsMapViewModel(get(), get(), centerLat, centerLon, radiusKm)
     }
 }

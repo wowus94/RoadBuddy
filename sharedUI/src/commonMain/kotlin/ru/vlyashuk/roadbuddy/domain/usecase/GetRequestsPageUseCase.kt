@@ -10,7 +10,7 @@ class GetRequestsPageUseCase(
 ) {
     suspend operator fun invoke(
         pageSize: Int,
-        cursorId: String?,
+        offset: Int,
         query: RequestsPageQuery
-    ): AppResult<RequestsPage> = repository.getRequestsPage(pageSize, cursorId, query)
+    ): AppResult<RequestsPage> = repository.getRequestsPage(pageSize, offset, query)
 }

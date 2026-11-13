@@ -11,6 +11,7 @@ class ObserveRequestsPageUseCase(
 ) {
     operator fun invoke(
         pageSize: Int,
+        offset: Int,
         query: RequestsPageQuery
-    ): Flow<AppResult<RequestsPage>> = repository.observeRequestsPage(pageSize, query)
+    ): Flow<AppResult<RequestsPage>> = repository.observeRequestsPage(pageSize, offset, query)
 }

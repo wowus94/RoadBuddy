@@ -3,21 +3,19 @@ package ru.vlyashuk.roadbuddy.presentation.myrequests
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
-import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
-import ru.vlyashuk.roadbuddy.domain.usecase.GetMyRequestsUseCase
-import ru.vlyashuk.roadbuddy.presentation.error.toMessage
-
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
+import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
+import ru.vlyashuk.roadbuddy.domain.usecase.GetMyRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestsUseCase
+import ru.vlyashuk.roadbuddy.presentation.error.toMessage
 import ru.vlyashuk.roadbuddy.presentation.home.SortOption
 
 data class MyRequestsUiState(
@@ -30,7 +28,8 @@ data class MyRequestsUiState(
 )
 
 class MyRequestsViewModel(
-    private val getMyRequestsUseCase: GetMyRequestsUseCase
+    private val getMyRequestsUseCase: GetMyRequestsUseCase,
+    private val refreshRequestsUseCase: RefreshRequestsUseCase
 ) : ViewModel() {
 
     private val _rawRequests = MutableStateFlow<List<RoadRequest>>(emptyList())
@@ -83,6 +82,7 @@ class MyRequestsViewModel(
     }
 
     fun loadRequests() {
+        viewModelScope.launch { refreshRequestsUseCase() }
         viewModelScope.launch {
             getMyRequestsUseCase()
                 .onStart { _isLoading.value = true; _error.value = null }
