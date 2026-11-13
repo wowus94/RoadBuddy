@@ -25,8 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -77,6 +79,31 @@ private fun createMarkerBitmap(): Bitmap {
     canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, stroke)
     return bitmap
 }
+
+private const val CLUSTER_COLOR = 0xFF1E88E5.toInt()
+
+private fun createClusterBitmap(count: Int): Bitmap {
+    val size = 56
+    val bitmap = createBitmap(size, size)
+    val canvas = Canvas(bitmap)
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = CLUSTER_COLOR }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f, fill)
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, stroke)
+    val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        textSize = 24f
+        textAlign = Paint.Align.CENTER
+        isFakeBoldText = true
+    }
+    val y = size / 2f - (text.descent() + text.ascent()) / 2f
+    canvas.drawText(count.toString(), size / 2f, y, text)
+    return bitmap
+}
 private var mapKitInitialized = false
 internal fun initMapKit(context: Context) {
     if (mapKitInitialized) return
@@ -106,7 +133,9 @@ actual fun MapPicker(
     modifier: Modifier,
     markers: List<MapMarker>,
     onMarkerClick: (id: String) -> Unit,
-    focusPoints: List<Pair<Double, Double>>
+    focusPoints: List<Pair<Double, Double>>,
+    onZoomChanged: (zoom: Float) -> Unit,
+    initialCamera: MapCamera?
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -117,8 +146,10 @@ actual fun MapPicker(
     }
     val map = mapView.mapWindow.map
 
+    val currentOnZoomChanged by rememberUpdatedState(onZoomChanged)
     val cameraListener = remember(onLocationSelected) {
         CameraListener { _, cameraPosition, _, finished ->
+            currentOnZoomChanged(cameraPosition.zoom)
             if (finished) {
                 val target = cameraPosition.target
                 onLocationSelected(target.latitude, target.longitude)
@@ -133,10 +164,14 @@ actual fun MapPicker(
     }
 
     val placemarks = remember { mutableMapOf<String, PlacemarkMapObject>() }
+    val markersById = remember { mutableMapOf<String, MapMarker>() }
     val markerBitmap = remember { createMarkerBitmap() }
+    val clusterBitmaps = remember { mutableMapOf<Int, Bitmap>() }
     val currentOnMarkerClick by rememberUpdatedState(onMarkerClick)
 
     LaunchedEffect(markers) {
+        markersById.clear()
+        markers.forEach { markersById[it.id] = it }
         val wantedIds = markers.mapTo(HashSet()) { it.id }
         placemarks.keys.filter { it !in wantedIds }.forEach { id ->
             placemarks.remove(id)?.let { map.mapObjects.remove(it) }
@@ -147,7 +182,26 @@ actual fun MapPicker(
                 created.addTapListener(
                     WeakReference(
                         MapObjectTapListener { _, _ ->
-                            currentOnMarkerClick(marker.id)
+                            val current = markersById[marker.id]
+                            val cam = current?.takeIf { isClusterMarker(it) }
+                                ?.let { cameraForPoints(it.clusterPoints) }
+                            if (cam != null) {
+                                val span = maxOf(cam.latitudeSpan, cam.longitudeSpan)
+                                val zoom = (ln(360.0 / span) / ln(2.0)).toFloat()
+                                    .coerceIn(3f, 20f)
+                                map.move(
+                                    CameraPosition(
+                                        Point(cam.latitude, cam.longitude),
+                                        zoom,
+                                        0f,
+                                        0f
+                                    ),
+                                    Animation(Animation.Type.SMOOTH, 0.25f),
+                                    null
+                                )
+                            } else {
+                                currentOnMarkerClick(marker.id)
+                            }
                             true
                         }
                     )
@@ -156,12 +210,34 @@ actual fun MapPicker(
                 created
             }
             placemark.geometry = Point(marker.latitude, marker.longitude)
-            placemark.setIcon(ImageProvider.fromBitmap(markerBitmap))
+            val icon = if (isClusterMarker(marker)) {
+                clusterBitmaps.getOrPut(marker.clusterCount) {
+                    createClusterBitmap(marker.clusterCount)
+                }
+            } else {
+                markerBitmap
+            }
+            placemark.setIcon(ImageProvider.fromBitmap(icon))
         }
     }
 
+    var cameraRestored by remember { mutableStateOf(false) }
+    val currentInitialCamera by rememberUpdatedState(initialCamera)
+
     LaunchedEffect(focusPoints) {
         if (focusPoints.isEmpty()) return@LaunchedEffect
+        if (!cameraRestored) {
+            cameraRestored = true
+            val cam = currentInitialCamera
+            if (cam != null) {
+                map.move(
+                    CameraPosition(Point(cam.latitude, cam.longitude), cam.zoom, 0f, 0f),
+                    Animation(Animation.Type.SMOOTH, 0.3f),
+                    null
+                )
+                return@LaunchedEffect
+            }
+        }
         if (focusPoints.size == 1) {
             val (lat, lon) = focusPoints.first()
             map.move(
