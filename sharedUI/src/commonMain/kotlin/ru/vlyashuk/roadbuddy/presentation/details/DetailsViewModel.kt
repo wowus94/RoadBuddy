@@ -14,6 +14,7 @@ import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestStatusUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.DeleteRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import ru.vlyashuk.roadbuddy.presentation.error.toMessage
 import kotlin.coroutines.cancellation.CancellationException
@@ -35,6 +36,7 @@ class DetailsViewModel(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val updateRequestStatusUseCase: UpdateRequestStatusUseCase,
     private val deleteRequestUseCase: DeleteRequestUseCase,
+    private val refreshRequestUseCase: RefreshRequestUseCase,
     private val requestId: String
 ) : ViewModel() {
 
@@ -51,6 +53,7 @@ class DetailsViewModel(
     )
 
     init {
+        viewModelScope.launch { refreshRequestUseCase(requestId) }
         viewModelScope.launch {
             try {
                 combine(

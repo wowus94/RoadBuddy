@@ -2,6 +2,7 @@ package ru.vlyashuk.roadbuddy.presentation.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.stateIn
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.util.geoRadiusContext
 import ru.vlyashuk.roadbuddy.domain.util.haversineKm
 import ru.vlyashuk.roadbuddy.presentation.error.toMessage
@@ -22,10 +24,15 @@ data class RequestsMapUiState(
 
 class RequestsMapViewModel(
     private val getRequestsUseCase: GetRequestsUseCase,
+    private val refreshRequestsUseCase: RefreshRequestsUseCase,
     private val centerLat: Double,
     private val centerLon: Double,
     private val radiusKm: Double
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch { refreshRequestsUseCase() }
+    }
 
     private val hasCenter = centerLat != 0.0 || centerLon != 0.0
     private val hasRadius = radiusKm > 0.0

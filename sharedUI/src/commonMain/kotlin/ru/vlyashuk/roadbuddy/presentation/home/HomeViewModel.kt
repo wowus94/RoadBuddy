@@ -2,6 +2,7 @@ package ru.vlyashuk.roadbuddy.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +24,7 @@ import ru.vlyashuk.roadbuddy.domain.model.RequestType
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.ObserveRequestsPageUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignOutUseCase
 import ru.vlyashuk.roadbuddy.domain.util.geoRadiusContext
@@ -58,9 +60,11 @@ sealed interface AuthUiState {
     data class User(val user: AuthUser?) : AuthUiState
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
     private val getRequestsPageUseCase: GetRequestsPageUseCase,
     private val observeRequestsPageUseCase: ObserveRequestsPageUseCase,
+    private val refreshRequestsUseCase: RefreshRequestsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
@@ -76,10 +80,10 @@ class HomeViewModel(
     private val _hasMore = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
 
-    private var livePage: RequestsPage? = null
-    private var liveCursorId: String? = null
-    private var olderCursor: String? = null
-    private var olderHasMore = false
+    private var liveRequests: List<RoadRequest> = emptyList()
+    private var liveLastId: String? = null
+    private var liveNextOffset: Int? = null
+    private var olderNextOffset: Int? = null
     private val pageSize = 20
 
     private val queryParams = combine(
@@ -154,18 +158,21 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
+            refreshRequestsUseCase()
+        }
+        viewModelScope.launch {
             queryParams
                 .onEach {
-                    livePage = null
-                    liveCursorId = null
+                    liveRequests = emptyList()
+                    liveLastId = null
+                    liveNextOffset = null
                     _olderRequests.value = emptyList()
-                    olderCursor = null
-                    olderHasMore = false
+                    olderNextOffset = null
                     _hasMore.value = false
                     _isLoading.value = true
                     _error.value = null
                 }
-                .flatMapLatest { params -> observeRequestsPageUseCase(pageSize, params) }
+                .flatMapLatest { params -> observeRequestsPageUseCase(pageSize, 0, params) }
                 .collect { result ->
                     when (result) {
                         is AppResult.Success -> onLivePage(result.value)
@@ -179,13 +186,14 @@ class HomeViewModel(
     }
 
     private fun onLivePage(page: RequestsPage) {
-        val cursorChanged = page.nextCursor != liveCursorId
-        livePage = page
-        if (cursorChanged) {
-            liveCursorId = page.nextCursor
+        val lastId = page.requests.lastOrNull()?.id
+        val contentShifted = lastId != liveLastId
+        liveRequests = page.requests
+        liveLastId = lastId
+        liveNextOffset = page.nextOffset
+        if (contentShifted) {
             _olderRequests.value = emptyList()
-            olderCursor = null
-            olderHasMore = false
+            olderNextOffset = null
             _hasMore.value = page.hasMore
         }
         _rawRequests.value = (page.requests + _olderRequests.value)
@@ -195,7 +203,7 @@ class HomeViewModel(
 
     fun loadNextPage() {
         if (!_hasMore.value || _isLoadingMore.value) return
-        val cursor = olderCursor ?: livePage?.nextCursor ?: return
+        val offset = olderNextOffset ?: liveNextOffset ?: return
         viewModelScope.launch {
             _isLoadingMore.value = true
             val query = RequestsPageQuery(
@@ -203,13 +211,12 @@ class HomeViewModel(
                 status = _selectedStatus.value,
                 sortDescending = _sortOption.value == SortOption.NEWEST_FIRST
             )
-            when (val result = getRequestsPageUseCase(pageSize, cursor, query)) {
+            when (val result = getRequestsPageUseCase(pageSize, offset, query)) {
                 is AppResult.Success -> {
                     _olderRequests.update { it + result.value.requests }
-                    olderCursor = result.value.nextCursor
-                    olderHasMore = result.value.hasMore
+                    olderNextOffset = result.value.nextOffset
                     _hasMore.value = result.value.hasMore
-                    _rawRequests.value = (livePage?.requests.orEmpty() + _olderRequests.value)
+                    _rawRequests.value = (liveRequests + _olderRequests.value)
                         .distinctBy { it.id }
                 }
                 is AppResult.Failure -> {
