@@ -18,7 +18,9 @@ import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.DeleteRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetMyRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.ObserveRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestStatusUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
@@ -53,6 +55,8 @@ val appModule = module {
 
     // UseCase
     factoryOf(::GetRequestsUseCase)
+    factoryOf(::GetRequestsPageUseCase)
+    factoryOf(::ObserveRequestsPageUseCase)
     factoryOf(::GetMyRequestsUseCase)
     factoryOf(::CreateRequestUseCase)
     factoryOf(::GetRequestByIdUseCase)

@@ -13,6 +13,8 @@ import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.domain.error.AppError
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
+import ru.vlyashuk.roadbuddy.domain.model.RequestsPage
+import ru.vlyashuk.roadbuddy.domain.model.RequestsPageQuery
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
@@ -28,6 +30,23 @@ class RoadRequestRepositoryImpl(
     override fun getRequests(): Flow<AppResult<List<RoadRequest>>> = remote.getRequests()
         .map<List<RoadRequest>, AppResult<List<RoadRequest>>> { AppResult.Success(it) }
         .catch { emit(AppResult.Failure(AppError.Network)) }
+
+    override fun observeRequestsPage(
+        pageSize: Int,
+        query: RequestsPageQuery
+    ): Flow<AppResult<RequestsPage>> = remote.observeRequestsPage(pageSize, query)
+        .map<RequestsPage, AppResult<RequestsPage>> { AppResult.Success(it) }
+        .catch { emit(AppResult.Failure(AppError.Network)) }
+
+    override suspend fun getRequestsPage(
+        pageSize: Int,
+        cursorId: String?,
+        query: RequestsPageQuery
+    ): AppResult<RequestsPage> = try {
+        AppResult.Success(remote.getRequestsPage(pageSize, cursorId, query))
+    } catch (e: Exception) {
+        AppResult.Failure(AppError.Network)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getMyRequests(): Flow<AppResult<List<RoadRequest>>> =
