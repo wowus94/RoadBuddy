@@ -14,7 +14,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -29,8 +32,10 @@ import roadbuddy.sharedui.generated.resources.ic_arrow_back
 import roadbuddy.sharedui.generated.resources.requests_map
 import roadbuddy.sharedui.generated.resources.requests_without_location
 import roadbuddy.sharedui.generated.resources.you_are_here
+import ru.vlyashuk.roadbuddy.presentation.components.MapCamera
 import ru.vlyashuk.roadbuddy.presentation.components.MapMarker
 import ru.vlyashuk.roadbuddy.presentation.components.MapPicker
+import ru.vlyashuk.roadbuddy.presentation.components.clusterMarkers
 import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 
 private const val USER_MARKER_ID = "__user__"
@@ -49,8 +54,17 @@ fun RequestsMapScreen(
     val state by viewModel.uiState.collectAsState()
     val hasCenter = centerLat != 0.0 || centerLon != 0.0
     val userTitle = stringResource(Res.string.you_are_here)
+    var zoom by rememberSaveable { mutableStateOf(15f) }
+    var camLat by rememberSaveable { mutableStateOf(Double.NaN) }
+    var camLon by rememberSaveable { mutableStateOf(Double.NaN) }
+    var camZoom by rememberSaveable { mutableStateOf(Float.NaN) }
+    val initialCamera = if (!camLat.isNaN() && !camLon.isNaN() && !camZoom.isNaN()) {
+        MapCamera(camLat, camLon, camZoom)
+    } else {
+        null
+    }
 
-    val markers = remember(state.requests, hasCenter, userTitle) {
+    val rawMarkers = remember(state.requests, hasCenter, userTitle) {
         buildList {
             if (hasCenter) {
                 add(
@@ -58,7 +72,8 @@ fun RequestsMapScreen(
                         id = USER_MARKER_ID,
                         latitude = centerLat,
                         longitude = centerLon,
-                        title = userTitle
+                        title = userTitle,
+                        clusterable = false
                     )
                 )
             }
@@ -80,8 +95,12 @@ fun RequestsMapScreen(
         }
     }
 
-    val focusPoints = remember(markers) {
-        markers.map { it.latitude to it.longitude }
+    val markers = remember(rawMarkers, zoom) {
+        clusterMarkers(rawMarkers, zoom)
+    }
+
+    val focusPoints = remember(rawMarkers) {
+        rawMarkers.map { it.latitude to it.longitude }
     }
 
     Scaffold(
@@ -128,12 +147,20 @@ fun RequestsMapScreen(
                     MapPicker(
                         latitude = if (hasCenter) centerLat else null,
                         longitude = if (hasCenter) centerLon else null,
-                        onLocationSelected = { _, _ -> },
+                        onLocationSelected = { lat, lon ->
+                            camLat = lat
+                            camLon = lon
+                        },
                         markers = markers,
                         onMarkerClick = { id ->
                             if (id != USER_MARKER_ID) onNavigateToDetails(id)
                         },
                         focusPoints = focusPoints,
+                        onZoomChanged = { z ->
+                            zoom = z
+                            camZoom = z
+                        },
+                        initialCamera = initialCamera,
                         modifier = Modifier.fillMaxSize()
                     )
 
