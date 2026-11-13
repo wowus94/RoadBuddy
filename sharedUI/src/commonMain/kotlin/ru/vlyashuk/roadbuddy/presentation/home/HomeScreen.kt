@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -373,6 +374,28 @@ fun HomeScreen(
                                 request = request,
                                 onClick = { onNavigateToDetails(request.id) }
                             )
+                        }
+
+                        if (state.hasMore) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = RoadBuddyTheme.spacing.medium),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (state.isLoadingMore) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(24.dp),
+                                            color = RoadBuddyTheme.colors.primary,
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                    LaunchedEffect(Unit) {
+                                        viewModel.loadNextPage()
+                                    }
+                                }
+                            }
                         }
                     }
                 }

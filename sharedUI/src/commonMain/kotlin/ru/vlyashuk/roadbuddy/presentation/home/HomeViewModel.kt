@@ -7,17 +7,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
 import ru.vlyashuk.roadbuddy.domain.model.AuthUser
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
+import ru.vlyashuk.roadbuddy.domain.model.RequestsPage
+import ru.vlyashuk.roadbuddy.domain.model.RequestsPageQuery
 import ru.vlyashuk.roadbuddy.domain.model.RequestType
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
-import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsPageUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.ObserveRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignOutUseCase
 import ru.vlyashuk.roadbuddy.domain.util.geoRadiusContext
@@ -39,6 +44,8 @@ data class NearbyState(
 data class HomeUiState(
     val requests: List<RoadRequest> = emptyList(),
     val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val hasMore: Boolean = false,
     val error: String? = null,
     val selectedType: RequestType? = null,
     val selectedStatus: RequestStatus? = null,
@@ -51,20 +58,39 @@ sealed interface AuthUiState {
     data class User(val user: AuthUser?) : AuthUiState
 }
 
-@OptIn(InternalCoroutinesApi::class)
 class HomeViewModel(
-    private val getRequestsUseCase: GetRequestsUseCase,
+    private val getRequestsPageUseCase: GetRequestsPageUseCase,
+    private val observeRequestsPageUseCase: ObserveRequestsPageUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
     private val _rawRequests = MutableStateFlow<List<RoadRequest>>(emptyList())
+    private val _olderRequests = MutableStateFlow<List<RoadRequest>>(emptyList())
     private val _selectedType = MutableStateFlow<RequestType?>(null)
     private val _selectedStatus = MutableStateFlow<RequestStatus?>(null)
     private val _sortOption = MutableStateFlow<SortOption>(SortOption.NEWEST_FIRST)
     private val _nearby = MutableStateFlow(NearbyState())
     private val _isLoading = MutableStateFlow(false)
+    private val _isLoadingMore = MutableStateFlow(false)
+    private val _hasMore = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
+
+    private var livePage: RequestsPage? = null
+    private var liveCursorId: String? = null
+    private var olderCursor: String? = null
+    private var olderHasMore = false
+    private val pageSize = 20
+
+    private val queryParams = combine(
+        _selectedType, _selectedStatus, _sortOption
+    ) { type, status, sort ->
+        RequestsPageQuery(
+            type = type,
+            status = status,
+            sortDescending = sort == SortOption.NEWEST_FIRST
+        )
+    }.distinctUntilChanged()
 
     @Suppress("UNCHECKED_CAST")
     val uiState: StateFlow<HomeUiState> = combine(
@@ -74,6 +100,8 @@ class HomeViewModel(
         _sortOption,
         _nearby,
         _isLoading,
+        _isLoadingMore,
+        _hasMore,
         _error
     ) { array ->
         val raw = array[0] as List<RoadRequest>
@@ -82,19 +110,17 @@ class HomeViewModel(
         val sort = array[3] as SortOption
         val nearby = array[4] as NearbyState
         val loading = array[5] as Boolean
-        val err = array[6] as String?
+        val loadingMore = array[6] as Boolean
+        val hasMore = array[7] as Boolean
+        val err = array[8] as String?
 
-        val filtered = raw.filter { request ->
-            (type == null || request.type == type) &&
-            (status == null || request.status == status)
-        }
         val geoFiltered = if (
             nearby.enabled && nearby.centerLat != null && nearby.centerLon != null
         ) {
             val ctx = geoRadiusContext(nearby.centerLat, nearby.centerLon, nearby.radiusKm)
-            filtered.filter { ctx.contains(it) }
+            raw.filter { ctx.contains(it) }
         } else {
-            filtered
+            raw
         }
         val sorted = when (sort) {
             SortOption.NEWEST_FIRST -> geoFiltered.sortedByDescending { it.createdAt }
@@ -103,6 +129,8 @@ class HomeViewModel(
         HomeUiState(
             requests = sorted,
             isLoading = loading,
+            isLoadingMore = loadingMore,
+            hasMore = hasMore,
             error = err,
             selectedType = type,
             selectedStatus = status,
@@ -125,24 +153,70 @@ class HomeViewModel(
             )
 
     init {
-        loadRequests()
-    }
-
-    fun loadRequests() {
         viewModelScope.launch {
-            getRequestsUseCase()
-                .onStart { _isLoading.value = true; _error.value = null }
+            queryParams
+                .onEach {
+                    livePage = null
+                    liveCursorId = null
+                    _olderRequests.value = emptyList()
+                    olderCursor = null
+                    olderHasMore = false
+                    _hasMore.value = false
+                    _isLoading.value = true
+                    _error.value = null
+                }
+                .flatMapLatest { params -> observeRequestsPageUseCase(pageSize, params) }
                 .collect { result ->
-                    _isLoading.value = false
                     when (result) {
-                        is AppResult.Success -> {
-                            _rawRequests.value = result.value
-                        }
+                        is AppResult.Success -> onLivePage(result.value)
                         is AppResult.Failure -> {
                             _error.value = result.error.toMessage()
+                            _isLoading.value = false
                         }
                     }
                 }
+        }
+    }
+
+    private fun onLivePage(page: RequestsPage) {
+        val cursorChanged = page.nextCursor != liveCursorId
+        livePage = page
+        if (cursorChanged) {
+            liveCursorId = page.nextCursor
+            _olderRequests.value = emptyList()
+            olderCursor = null
+            olderHasMore = false
+            _hasMore.value = page.hasMore
+        }
+        _rawRequests.value = (page.requests + _olderRequests.value)
+            .distinctBy { it.id }
+        _isLoading.value = false
+    }
+
+    fun loadNextPage() {
+        if (!_hasMore.value || _isLoadingMore.value) return
+        val cursor = olderCursor ?: livePage?.nextCursor ?: return
+        viewModelScope.launch {
+            _isLoadingMore.value = true
+            val query = RequestsPageQuery(
+                type = _selectedType.value,
+                status = _selectedStatus.value,
+                sortDescending = _sortOption.value == SortOption.NEWEST_FIRST
+            )
+            when (val result = getRequestsPageUseCase(pageSize, cursor, query)) {
+                is AppResult.Success -> {
+                    _olderRequests.update { it + result.value.requests }
+                    olderCursor = result.value.nextCursor
+                    olderHasMore = result.value.hasMore
+                    _hasMore.value = result.value.hasMore
+                    _rawRequests.value = (livePage?.requests.orEmpty() + _olderRequests.value)
+                        .distinctBy { it.id }
+                }
+                is AppResult.Failure -> {
+                    _error.value = result.error.toMessage()
+                }
+            }
+            _isLoadingMore.value = false
         }
     }
 

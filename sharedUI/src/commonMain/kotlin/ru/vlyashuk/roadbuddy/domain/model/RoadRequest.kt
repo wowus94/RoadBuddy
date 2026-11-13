@@ -18,7 +18,9 @@ data class RoadRequest(
     val contact: String = "",
     val helperId: String = "",
     val status: RequestStatus = RequestStatus.OPEN,
+    @Serializable(with = InstantTimestampSerializer::class)
     val createdAt: Instant = Clock.System.now(),
+    @Serializable(with = InstantTimestampSerializer::class)
     val updatedAt: Instant = Clock.System.now()
 )
 
