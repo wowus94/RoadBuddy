@@ -23,6 +23,8 @@
     <string name="map">Map</string>
     <string name="requests_map">Requests map</string>
     <string name="you_are_here">You</string>
+    <string name="offline_indicator">No internet connection</string>
+    <string name="retry">Retry</string>
     <string name="requests_without_location">%1$d request(s) have no location and can\'t be shown on the map</string>
 
     <!-- Request Types -->

@@ -47,6 +47,7 @@ data class HomeUiState(
     val requests: List<RoadRequest> = emptyList(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
+    val isRefreshing: Boolean = false,
     val hasMore: Boolean = false,
     val error: String? = null,
     val selectedType: RequestType? = null,
@@ -77,6 +78,7 @@ class HomeViewModel(
     private val _nearby = MutableStateFlow(NearbyState())
     private val _isLoading = MutableStateFlow(false)
     private val _isLoadingMore = MutableStateFlow(false)
+    private val _isRefreshing = MutableStateFlow(false)
     private val _hasMore = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
 
@@ -105,6 +107,7 @@ class HomeViewModel(
         _nearby,
         _isLoading,
         _isLoadingMore,
+        _isRefreshing,
         _hasMore,
         _error
     ) { array ->
@@ -115,8 +118,9 @@ class HomeViewModel(
         val nearby = array[4] as NearbyState
         val loading = array[5] as Boolean
         val loadingMore = array[6] as Boolean
-        val hasMore = array[7] as Boolean
-        val err = array[8] as String?
+        val refreshing = array[7] as Boolean
+        val hasMore = array[8] as Boolean
+        val err = array[9] as String?
 
         val geoFiltered = if (
             nearby.enabled && nearby.centerLat != null && nearby.centerLon != null
@@ -134,6 +138,7 @@ class HomeViewModel(
             requests = sorted,
             isLoading = loading,
             isLoadingMore = loadingMore,
+            isRefreshing = refreshing,
             hasMore = hasMore,
             error = err,
             selectedType = type,
@@ -199,6 +204,14 @@ class HomeViewModel(
         _rawRequests.value = (page.requests + _olderRequests.value)
             .distinctBy { it.id }
         _isLoading.value = false
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            refreshRequestsUseCase()
+            _isRefreshing.value = false
+        }
     }
 
     fun loadNextPage() {

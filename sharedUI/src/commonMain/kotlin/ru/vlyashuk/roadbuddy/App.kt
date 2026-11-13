@@ -1,5 +1,6 @@
 package ru.vlyashuk.roadbuddy
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
@@ -22,10 +23,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.koinConfiguration
+import ru.vlyashuk.roadbuddy.data.connectivity.ConnectivityObserver
+import ru.vlyashuk.roadbuddy.data.sync.RequestsSyncer
 import ru.vlyashuk.roadbuddy.di.appModule
+import ru.vlyashuk.roadbuddy.presentation.components.OfflineBanner
 import ru.vlyashuk.roadbuddy.presentation.create.CreateScreen
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
@@ -66,6 +71,14 @@ fun App(
             val sessionViewModel: SessionViewModel = koinViewModel()
             val sessionState by sessionViewModel.state.collectAsState()
 
+            val connectivityObserver = koinInject<ConnectivityObserver>()
+            val isOnline by connectivityObserver.isOnline.collectAsState()
+            val requestsSyncer = koinInject<RequestsSyncer>()
+
+            LaunchedEffect(Unit) {
+                requestsSyncer.start()
+            }
+
             LaunchedEffect(sessionState) {
                 when (sessionState) {
                     SessionState.Unauthenticated -> {
@@ -88,7 +101,12 @@ fun App(
                     .windowInsetsPadding(WindowInsets.safeDrawing),
                 color = MaterialTheme.colorScheme.background
             ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    if (!isOnline) {
+                        OfflineBanner()
+                    }
                 NavDisplay(
+                    modifier = Modifier.weight(1f),
                     backStack = backStack,
                     onBack = { backStack.removeLastOrNull() },
                     entryDecorators = listOf(
@@ -168,6 +186,7 @@ fun App(
                         }
                     }
                 )
+                }
             }
         }
     })

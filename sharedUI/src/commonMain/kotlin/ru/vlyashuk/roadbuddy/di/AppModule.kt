@@ -4,9 +4,12 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import ru.vlyashuk.roadbuddy.data.connectivity.ConnectivityObserver
+import ru.vlyashuk.roadbuddy.data.connectivity.createConnectivityObserver
 import ru.vlyashuk.roadbuddy.data.local.database.AppDatabase
 import ru.vlyashuk.roadbuddy.data.local.database.getDatabaseBuilder
 import ru.vlyashuk.roadbuddy.data.local.database.getRoomDatabase
+import ru.vlyashuk.roadbuddy.data.sync.RequestsSyncer
 import ru.vlyashuk.roadbuddy.data.remote.auth.RemoteAuthDataSource
 import ru.vlyashuk.roadbuddy.data.remote.firestore.FirestoreRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
@@ -47,6 +50,8 @@ val appModule = module {
     // Room
     single<AppDatabase> { getRoomDatabase(getDatabaseBuilder()) }
     single { get<AppDatabase>().roadRequestDao() }
+    single<ConnectivityObserver> { createConnectivityObserver() }
+    single { RequestsSyncer(get(), get(), get()) }
 
     // Repository
     single<RoadRequestRepository> {
