@@ -62,6 +62,17 @@
     <string name="action_accept_request">Принять заявку / Помочь</string>
     <string name="action_decline_request">Отказаться / Перестать помогать</string>
 
+    <!-- Responses -->
+    <string name="responses_title">Отклики</string>
+    <string name="no_responses_yet">Откликов пока нет</string>
+    <string name="action_respond">Откликнуться</string>
+    <string name="you_responded">Вы откликнулись на эту заявку</string>
+    <string name="respond_message_hint">Сообщение автору (необязательно)</string>
+    <string name="submit_response">Отправить отклик</string>
+    <string name="withdraw_response">Отозвать отклик</string>
+    <string name="select_helper">Выбрать</string>
+    <string name="label_helper">Помощник</string>
+
     <!-- Create and Edit Request Screens -->
     <string name="new_request">Новая заявка</string>
     <string name="edit_request">Редактировать заявку</string>

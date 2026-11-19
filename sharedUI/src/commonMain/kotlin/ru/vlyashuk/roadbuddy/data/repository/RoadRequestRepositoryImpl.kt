@@ -1,5 +1,6 @@
 package ru.vlyashuk.roadbuddy.data.repository
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -8,12 +9,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import ru.vlyashuk.roadbuddy.data.error.toAppError
 import ru.vlyashuk.roadbuddy.data.local.dao.RoadRequestDao
 import ru.vlyashuk.roadbuddy.data.local.entity.RoadRequestEntity
 import ru.vlyashuk.roadbuddy.data.local.mapper.RoadRequestMapper
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.domain.error.AppError
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
+import ru.vlyashuk.roadbuddy.domain.model.RequestResponse
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.domain.model.RequestsPage
 import ru.vlyashuk.roadbuddy.domain.model.RequestsPageQuery
@@ -209,6 +212,95 @@ class RoadRequestRepositoryImpl(
         }
     } catch (e: Exception) {
         AppResult.Failure(AppError.Network)
+    }
+
+    override fun observeResponses(
+        requestId: String
+    ): Flow<AppResult<List<RequestResponse>>> =
+        remote.getResponses(requestId)
+            .map<List<RequestResponse>, AppResult<List<RequestResponse>>> {
+                AppResult.Success(it)
+            }
+            .catch { emit(AppResult.Failure(it.toAppError())) }
+
+    override suspend fun respondToRequest(
+        requestId: String,
+        message: String
+    ): AppResult<Unit> = try {
+        val user =
+            getCurrentUserUseCase().first() ?: return AppResult.Failure(AppError.Unauthorized)
+        val request = remote.getRequest(requestId).first()
+            ?: return AppResult.Failure(AppError.NotFound)
+
+        if (request.authorId == user.uid) return AppResult.Failure(AppError.Forbidden)
+        if (request.status != RequestStatus.OPEN) return AppResult.Failure(AppError.Conflict)
+
+        remote.createResponse(
+            RequestResponse(
+                id = user.uid,
+                requestId = requestId,
+                helperId = user.uid,
+                helperName = user.email ?: user.uid,
+                message = message.trim(),
+                createdAt = Clock.System.now()
+            )
+        )
+        AppResult.Success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        AppResult.Failure(e.toAppError())
+    }
+
+    override suspend fun selectHelper(
+        requestId: String,
+        helperId: String
+    ): AppResult<Unit> = try {
+        val currentUid =
+            getCurrentUserUseCase().first()?.uid ?: return AppResult.Failure(AppError.Unauthorized)
+        val request = remote.getRequest(requestId).first()
+            ?: return AppResult.Failure(AppError.NotFound)
+
+        if (request.authorId != currentUid) return AppResult.Failure(AppError.Forbidden)
+        if (request.status != RequestStatus.OPEN && request.status != RequestStatus.IN_PROGRESS) {
+            return AppResult.Failure(AppError.Conflict)
+        }
+
+        val toSave = request.copy(
+            helperId = helperId,
+            status = RequestStatus.IN_PROGRESS,
+            updatedAt = Clock.System.now()
+        )
+        remote.updateRequest(toSave)
+        cacheRequest(toSave)
+        AppResult.Success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        AppResult.Failure(e.toAppError())
+    }
+
+    override suspend fun deleteResponse(
+        requestId: String,
+        responseId: String
+    ): AppResult<Unit> = try {
+        val currentUid =
+            getCurrentUserUseCase().first()?.uid ?: return AppResult.Failure(AppError.Unauthorized)
+        val request = remote.getRequest(requestId).first()
+        val response = remote.getResponses(requestId).first()
+            .firstOrNull { it.id == responseId }
+            ?: return AppResult.Failure(AppError.NotFound)
+
+        if (request?.authorId != currentUid && response.helperId != currentUid) {
+            return AppResult.Failure(AppError.Forbidden)
+        }
+
+        remote.deleteResponse(requestId, responseId)
+        AppResult.Success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        AppResult.Failure(e.toAppError())
     }
 
     /**

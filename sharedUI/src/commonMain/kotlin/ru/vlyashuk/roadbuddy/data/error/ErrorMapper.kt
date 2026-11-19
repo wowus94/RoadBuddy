@@ -18,8 +18,8 @@ internal fun Throwable.toAppError(): AppError {
             normalizedMessage.contains("timeout") -> AppError.Network
         normalizedMessage.contains("unauthenticated") ||
             normalizedMessage.contains("user-not-found") -> AppError.Unauthorized
-        normalizedMessage.contains("permission-denied") ||
-            normalizedMessage.contains("permission denied") -> AppError.Forbidden
+        normalizedMessage.contains("permission") ||
+            normalizedMessage.contains("insufficient") -> AppError.Forbidden
         normalizedMessage.contains("not found") -> AppError.NotFound
         normalizedMessage.contains("wrong-password") ||
             normalizedMessage.contains("invalid-credential") ||

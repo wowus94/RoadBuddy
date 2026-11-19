@@ -19,13 +19,17 @@ import ru.vlyashuk.roadbuddy.domain.repository.AuthRepository
 import ru.vlyashuk.roadbuddy.domain.repository.RoadRequestRepository
 import ru.vlyashuk.roadbuddy.domain.usecase.CreateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.DeleteRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.DeleteResponseUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetMyRequestsUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestByIdUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.GetRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.GetResponsesUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.ObserveRequestsPageUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.RefreshRequestsUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.RespondToRequestUseCase
+import ru.vlyashuk.roadbuddy.domain.usecase.SelectHelperUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestStatusUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.UpdateRequestUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.GetCurrentUserUseCase
@@ -72,6 +76,10 @@ val appModule = module {
     factoryOf(::DeleteRequestUseCase)
     factoryOf(::RefreshRequestsUseCase)
     factoryOf(::RefreshRequestUseCase)
+    factoryOf(::GetResponsesUseCase)
+    factoryOf(::RespondToRequestUseCase)
+    factoryOf(::SelectHelperUseCase)
+    factoryOf(::DeleteResponseUseCase)
     factoryOf(::SignInUseCase)
     factoryOf(::SignUpUseCase)
     factoryOf(::SignOutUseCase)
@@ -86,7 +94,7 @@ val appModule = module {
     viewModelOf(::MyRequestsViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
-        DetailsViewModel(get(), get(), get(), get(), get(), requestId)
+        DetailsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), requestId)
     }
     viewModel { (requestId: String) ->
         EditViewModel(get(), get(), get(), requestId)
