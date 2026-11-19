@@ -2,6 +2,7 @@ package ru.vlyashuk.roadbuddy.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
+import ru.vlyashuk.roadbuddy.domain.model.RequestResponse
 import ru.vlyashuk.roadbuddy.domain.model.RequestsPage
 import ru.vlyashuk.roadbuddy.domain.model.RequestsPageQuery
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
@@ -26,4 +27,8 @@ interface RoadRequestRepository {
     suspend fun updateRequest(request: RoadRequest): AppResult<Unit>
     suspend fun updateRequestStatus(request: RoadRequest): AppResult<Unit>
     suspend fun deleteRequest(id: String): AppResult<Unit>
+    fun observeResponses(requestId: String): Flow<AppResult<List<RequestResponse>>>
+    suspend fun respondToRequest(requestId: String, message: String): AppResult<Unit>
+    suspend fun selectHelper(requestId: String, helperId: String): AppResult<Unit>
+    suspend fun deleteResponse(requestId: String, responseId: String): AppResult<Unit>
 }
