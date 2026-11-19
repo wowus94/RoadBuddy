@@ -1,10 +1,8 @@
 package ru.vlyashuk.roadbuddy.domain.model
 
-import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-@Serializable
 data class RoadRequest(
     val id: String = "",
     val title: String,
@@ -18,18 +16,14 @@ data class RoadRequest(
     val contact: String = "",
     val helperId: String = "",
     val status: RequestStatus = RequestStatus.OPEN,
-    @Serializable(with = InstantTimestampSerializer::class)
     val createdAt: Instant = Clock.System.now(),
-    @Serializable(with = InstantTimestampSerializer::class)
     val updatedAt: Instant = Clock.System.now()
 )
 
-@Serializable
 enum class RequestType {
     TOWING, FUEL, BATTERY, TIRE, OTHER
 }
 
-@Serializable
 enum class RequestStatus {
     OPEN, IN_PROGRESS, COMPLETED, CANCELLED
 }

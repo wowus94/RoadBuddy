@@ -1,4 +1,4 @@
-package ru.vlyashuk.roadbuddy.domain.model
+package ru.vlyashuk.roadbuddy.data.remote.firestore
 
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.TimestampSerializer
