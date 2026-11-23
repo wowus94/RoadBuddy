@@ -130,9 +130,10 @@ class HomeViewModel(
         } else {
             raw
         }
+        val active = geoFiltered.filter { it.status !in FINISHED_STATUSES }
         val sorted = when (sort) {
-            SortOption.NEWEST_FIRST -> geoFiltered.sortedByDescending { it.createdAt }
-            SortOption.OLDEST_FIRST -> geoFiltered.sortedBy { it.createdAt }
+            SortOption.NEWEST_FIRST -> active.sortedByDescending { it.createdAt }
+            SortOption.OLDEST_FIRST -> active.sortedBy { it.createdAt }
         }
         HomeUiState(
             requests = sorted,
@@ -282,5 +283,9 @@ class HomeViewModel(
         viewModelScope.launch {
             signOutUseCase()
         }
+    }
+
+    private companion object {
+        val FINISHED_STATUSES = setOf(RequestStatus.COMPLETED, RequestStatus.CANCELLED)
     }
 }

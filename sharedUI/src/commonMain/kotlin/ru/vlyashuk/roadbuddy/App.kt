@@ -42,6 +42,7 @@ import ru.vlyashuk.roadbuddy.presentation.components.RoadBuddyBottomBar
 import ru.vlyashuk.roadbuddy.presentation.create.CreateScreen
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
+import ru.vlyashuk.roadbuddy.presentation.history.HistoryScreen
 import ru.vlyashuk.roadbuddy.presentation.home.HomeScreen
 import ru.vlyashuk.roadbuddy.presentation.login.LoginScreen
 import ru.vlyashuk.roadbuddy.presentation.map.RequestsMapScreen
@@ -88,6 +89,7 @@ fun App(
             val feedBackStack = rememberNavBackStack(navConfig, Route.Home)
             val myRequestsBackStack = rememberNavBackStack(navConfig, Route.MyRequests)
             val activeHelpBackStack = rememberNavBackStack(navConfig, Route.ActiveHelp)
+            val historyBackStack = rememberNavBackStack(navConfig, Route.History)
             val authBackStack = rememberNavBackStack(navConfig, Route.Login)
 
             var selectedTabName by rememberSaveable { mutableStateOf(AppTab.FEED.name) }
@@ -96,6 +98,7 @@ fun App(
                 AppTab.FEED -> feedBackStack
                 AppTab.MY_REQUESTS -> myRequestsBackStack
                 AppTab.ACTIVE_HELP -> activeHelpBackStack
+                AppTab.HISTORY -> historyBackStack
             }
 
             val entryDecorators: List<NavEntryDecorator<NavKey>> = listOf(
@@ -180,6 +183,11 @@ private fun appEntryProvider(backStack: NavBackStack<NavKey>) = entryProvider<Na
     }
     entry<Route.ActiveHelp> {
         ActiveHelpScreen(
+            onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
+        )
+    }
+    entry<Route.History> {
+        HistoryScreen(
             onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
         )
     }
