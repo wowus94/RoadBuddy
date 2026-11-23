@@ -21,6 +21,10 @@
     <string name="you_have_no_requests_yet">У вас пока нет созданных заявок</string>
     <string name="active_help">Активная помощь</string>
     <string name="no_active_help_yet">Сейчас вы не помогаете ни по одной заявке</string>
+    <string name="history">История</string>
+    <string name="nav_my_requests">Заявки</string>
+    <string name="nav_active_help">Помощь</string>
+    <string name="no_history_yet">Пока нет завершённых заявок</string>
     <string name="near_me">Рядом со мной</string>
     <string name="radius_km">Радиус: %1$s км</string>
     <string name="map">Карта</string>

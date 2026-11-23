@@ -55,6 +55,7 @@ import roadbuddy.sharedui.generated.resources.retry
 import roadbuddy.sharedui.generated.resources.road_buddy
 import roadbuddy.sharedui.generated.resources.sort_newest
 import roadbuddy.sharedui.generated.resources.sort_oldest
+import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
 import ru.vlyashuk.roadbuddy.presentation.components.FilterBottomSheet
 import ru.vlyashuk.roadbuddy.presentation.components.RequestCard
 import ru.vlyashuk.roadbuddy.presentation.location.rememberLocationPermissionRequester
@@ -414,7 +415,8 @@ fun HomeScreen(
                 selectedType = state.selectedType,
                 onTypeSelected = { viewModel.setTypeFilter(it) },
                 selectedStatus = state.selectedStatus,
-                onStatusSelected = { viewModel.setStatusFilter(it) }
+                onStatusSelected = { viewModel.setStatusFilter(it) },
+                visibleStatuses = listOf(RequestStatus.OPEN, RequestStatus.IN_PROGRESS)
             )
         }
 

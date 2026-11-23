@@ -38,6 +38,7 @@ fun FilterBottomSheet(
     onTypeSelected: (RequestType?) -> Unit,
     selectedStatus: RequestStatus?,
     onStatusSelected: (RequestStatus?) -> Unit,
+    visibleStatuses: List<RequestStatus> = RequestStatus.entries,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -79,7 +80,8 @@ fun FilterBottomSheet(
                 selectedType = selectedType,
                 onTypeSelected = onTypeSelected,
                 selectedStatus = selectedStatus,
-                onStatusSelected = onStatusSelected
+                onStatusSelected = onStatusSelected,
+                visibleStatuses = visibleStatuses
             )
 
             Spacer(modifier = Modifier.height(16.dp))

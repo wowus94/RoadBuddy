@@ -21,6 +21,10 @@
     <string name="you_have_no_requests_yet">You have no requests yet</string>
     <string name="active_help">Active help</string>
     <string name="no_active_help_yet">You are not helping with any requests right now</string>
+    <string name="history">History</string>
+    <string name="nav_my_requests">Requests</string>
+    <string name="nav_active_help">Help</string>
+    <string name="no_history_yet">No finished requests yet</string>
     <string name="near_me">Near me</string>
     <string name="radius_km">Radius: %1$s km</string>
     <string name="map">Map</string>

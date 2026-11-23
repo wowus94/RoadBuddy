@@ -41,6 +41,7 @@ import ru.vlyashuk.roadbuddy.presentation.activehelp.ActiveHelpViewModel
 import ru.vlyashuk.roadbuddy.presentation.create.CreateViewModel
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
 import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
+import ru.vlyashuk.roadbuddy.presentation.history.HistoryViewModel
 import ru.vlyashuk.roadbuddy.presentation.home.HomeViewModel
 import ru.vlyashuk.roadbuddy.presentation.login.LoginViewModel
 import ru.vlyashuk.roadbuddy.presentation.map.RequestsMapViewModel
@@ -94,6 +95,7 @@ val appModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::MyRequestsViewModel)
     viewModelOf(::ActiveHelpViewModel)
+    viewModelOf(::HistoryViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
         DetailsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), requestId)

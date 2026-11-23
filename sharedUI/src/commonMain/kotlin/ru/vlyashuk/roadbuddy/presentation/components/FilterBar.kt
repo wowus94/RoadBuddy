@@ -28,6 +28,7 @@ fun FilterBar(
     onTypeSelected: (RequestType?) -> Unit,
     selectedStatus: RequestStatus?,
     onStatusSelected: (RequestStatus?) -> Unit,
+    visibleStatuses: List<RequestStatus> = RequestStatus.entries,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -71,7 +72,7 @@ fun FilterBar(
                 onClick = { onStatusSelected(null) },
                 label = stringResource(Res.string.all_statuses)
             )
-            RequestStatus.entries.forEach { status ->
+            visibleStatuses.forEach { status ->
                 AppChip(
                     selected = selectedStatus == status,
                     onClick = { onStatusSelected(status) },
