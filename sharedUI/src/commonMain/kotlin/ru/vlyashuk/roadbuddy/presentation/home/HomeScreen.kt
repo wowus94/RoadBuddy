@@ -43,7 +43,6 @@ import roadbuddy.sharedui.generated.resources.filters
 import roadbuddy.sharedui.generated.resources.logout
 import roadbuddy.sharedui.generated.resources.logout_confirm_desc
 import roadbuddy.sharedui.generated.resources.logout_confirm_title
-import roadbuddy.sharedui.generated.resources.my_requests
 import roadbuddy.sharedui.generated.resources.near_me
 import roadbuddy.sharedui.generated.resources.map
 import roadbuddy.sharedui.generated.resources.radius_km
@@ -66,7 +65,6 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     onNavigateToDetails: (String) -> Unit = {},
     onNavigateToCreate: () -> Unit = {},
-    onNavigateToMyRequests: () -> Unit = {},
     onNavigateToMap: (Double, Double, Double) -> Unit = { _, _, _ -> }
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -88,16 +86,6 @@ fun HomeScreen(
                     ) 
                 },
                 actions = {
-                    Text(
-                        text = stringResource(Res.string.my_requests),
-                        modifier = Modifier
-                            .padding(horizontal = RoadBuddyTheme.spacing.medium)
-                            .clickable(onClick = onNavigateToMyRequests),
-                        style = RoadBuddyTheme.typography.labelLarge.copy(
-                            color = RoadBuddyTheme.colors.primary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
                     Text(
                         text = stringResource(Res.string.logout),
                         modifier = Modifier

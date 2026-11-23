@@ -1,5 +1,6 @@
 <resources>
     <string name="road_buddy">RoadBuddy</string>
+    <string name="feed">Лента</string>
     <string name="my_requests">Мои заявки</string>
     <string name="logout">Выйти</string>
     <string name="logout_confirm_title">Выход из аккаунта</string>
@@ -18,6 +19,8 @@
     <string name="no_requests_match">Нет заявок, соответствующих фильтрам</string>
     <string name="no_requests_yet">Заявок пока нет</string>
     <string name="you_have_no_requests_yet">У вас пока нет созданных заявок</string>
+    <string name="active_help">Активная помощь</string>
+    <string name="no_active_help_yet">Сейчас вы не помогаете ни по одной заявке</string>
     <string name="near_me">Рядом со мной</string>
     <string name="radius_km">Радиус: %1$s км</string>
     <string name="map">Карта</string>

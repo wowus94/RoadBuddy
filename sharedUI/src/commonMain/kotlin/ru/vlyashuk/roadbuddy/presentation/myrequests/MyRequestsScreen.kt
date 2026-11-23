@@ -16,8 +16,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,13 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import roadbuddy.sharedui.generated.resources.Res
-import roadbuddy.sharedui.generated.resources.back
 import roadbuddy.sharedui.generated.resources.filters
-import roadbuddy.sharedui.generated.resources.ic_arrow_back
 import roadbuddy.sharedui.generated.resources.my_requests
 import roadbuddy.sharedui.generated.resources.newest_first
 import roadbuddy.sharedui.generated.resources.no_requests_match
@@ -57,7 +52,6 @@ import ru.vlyashuk.roadbuddy.theme.RoadBuddyTheme
 @Composable
 fun MyRequestsScreen(
     viewModel: MyRequestsViewModel = koinViewModel(),
-    onBack: () -> Unit = {},
     onNavigateToDetails: (String) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -72,15 +66,6 @@ fun MyRequestsScreen(
                         text = stringResource(Res.string.my_requests),
                         style = RoadBuddyTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_arrow_back),
-                            contentDescription = stringResource(Res.string.back),
-                            tint = RoadBuddyTheme.colors.primary
-                        )
-                    }
                 }
             )
         }
