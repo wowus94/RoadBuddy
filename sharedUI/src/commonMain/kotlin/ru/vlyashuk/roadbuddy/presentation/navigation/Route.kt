@@ -21,6 +21,8 @@ sealed interface Route : NavKey {
     @Serializable
     data object MyRequests : Route
     @Serializable
+    data object ActiveHelp : Route
+    @Serializable
     data class Edit(val requestId: String) : Route
     @Serializable
     data class RequestsMap(

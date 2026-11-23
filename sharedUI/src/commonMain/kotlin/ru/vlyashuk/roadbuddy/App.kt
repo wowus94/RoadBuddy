@@ -11,8 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -30,7 +35,10 @@ import org.koin.dsl.koinConfiguration
 import ru.vlyashuk.roadbuddy.data.connectivity.ConnectivityObserver
 import ru.vlyashuk.roadbuddy.data.sync.RequestsSyncer
 import ru.vlyashuk.roadbuddy.di.appModule
+import ru.vlyashuk.roadbuddy.presentation.activehelp.ActiveHelpScreen
+import ru.vlyashuk.roadbuddy.presentation.components.AppTab
 import ru.vlyashuk.roadbuddy.presentation.components.OfflineBanner
+import ru.vlyashuk.roadbuddy.presentation.components.RoadBuddyBottomBar
 import ru.vlyashuk.roadbuddy.presentation.create.CreateScreen
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsScreen
 import ru.vlyashuk.roadbuddy.presentation.edit.EditScreen
@@ -66,8 +74,6 @@ fun App(
         AppTheme(
             onThemeChanged
         ) {
-            val backStack = rememberNavBackStack(navConfig, Route.Splash)
-
             val sessionViewModel: SessionViewModel = koinViewModel()
             val sessionState by sessionViewModel.state.collectAsState()
 
@@ -79,19 +85,28 @@ fun App(
                 requestsSyncer.start()
             }
 
+            val feedBackStack = rememberNavBackStack(navConfig, Route.Home)
+            val myRequestsBackStack = rememberNavBackStack(navConfig, Route.MyRequests)
+            val activeHelpBackStack = rememberNavBackStack(navConfig, Route.ActiveHelp)
+            val authBackStack = rememberNavBackStack(navConfig, Route.Login)
+
+            var selectedTabName by rememberSaveable { mutableStateOf(AppTab.FEED.name) }
+            val selectedTab = AppTab.valueOf(selectedTabName)
+            val activeBackStack = when (selectedTab) {
+                AppTab.FEED -> feedBackStack
+                AppTab.MY_REQUESTS -> myRequestsBackStack
+                AppTab.ACTIVE_HELP -> activeHelpBackStack
+            }
+
+            val entryDecorators: List<NavEntryDecorator<NavKey>> = listOf(
+                rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
+                rememberViewModelStoreNavEntryDecorator<NavKey>()
+            )
+
             LaunchedEffect(sessionState) {
-                when (sessionState) {
-                    SessionState.Unauthenticated -> {
-                        backStack.clear()
-                        backStack.add(Route.Login)
-                    }
-
-                    is SessionState.Authenticated -> {
-                        backStack.clear()
-                        backStack.add(Route.Home)
-                    }
-
-                    SessionState.Loading -> Unit
+                if (sessionState == SessionState.Unauthenticated) {
+                    authBackStack.clear()
+                    authBackStack.add(Route.Login)
                 }
             }
 
@@ -105,89 +120,100 @@ fun App(
                     if (!isOnline) {
                         OfflineBanner()
                     }
-                NavDisplay(
-                    modifier = Modifier.weight(1f),
-                    backStack = backStack,
-                    onBack = { backStack.removeLastOrNull() },
-                    entryDecorators = listOf(
-                        rememberSaveableStateHolderNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator()
-                    ),
-                    entryProvider = entryProvider {
-                        entry<Route.Splash> {
-                            SplashScreen()
-                        }
-                        entry<Route.Login> {
-                            LoginScreen(
-                                onAuthSuccess = {
-                                    with(backStack) {
-                                        clear()
-                                        add(Route.Home)
-                                    }
-                                },
-                                onNavigateToRegister = {
-                                    backStack.add(Route.Register)
+                    when (sessionState) {
+                        SessionState.Loading -> SplashScreen()
+                        SessionState.Unauthenticated -> NavDisplay(
+                            backStack = authBackStack,
+                            onBack = { authBackStack.removeLastOrNull() },
+                            entryDecorators = entryDecorators,
+                            entryProvider = entryProvider {
+                                entry<Route.Login> {
+                                    LoginScreen(
+                                        onAuthSuccess = {},
+                                        onNavigateToRegister = {
+                                            authBackStack.add(Route.Register)
+                                        }
+                                    )
                                 }
-                            )
-                        }
-                        entry<Route.Register> {
-                            RegisterScreen(
-                                onAuthSuccess = {
-                                    with(backStack) {
-                                        clear()
-                                        add(Route.Home)
-                                    }
-                                },
-                                onNavigateToLogin = { backStack.removeLastOrNull() }
-                            )
-                        }
-                        entry<Route.Home> {
-                            HomeScreen(
-                                onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
-                                onNavigateToCreate = { backStack.add(Route.Create) },
-                                onNavigateToMyRequests = { backStack.add(Route.MyRequests) },
-                                onNavigateToMap = { lat, lon, radius ->
-                                    backStack.add(Route.RequestsMap(lat, lon, radius))
+                                entry<Route.Register> {
+                                    RegisterScreen(
+                                        onAuthSuccess = {},
+                                        onNavigateToLogin = { authBackStack.removeLastOrNull() }
+                                    )
                                 }
+                            }
+                        )
+                        is SessionState.Authenticated -> Column(modifier = Modifier.fillMaxSize()) {
+                            NavDisplay(
+                                modifier = Modifier.weight(1f),
+                                backStack = activeBackStack,
+                                onBack = { activeBackStack.popToRoot() },
+                                entryDecorators = entryDecorators,
+                                entryProvider = appEntryProvider(activeBackStack)
                             )
-                        }
-                        entry<Route.MyRequests> {
-                            MyRequestsScreen(
-                                onBack = { backStack.removeLastOrNull() },
-                                onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
-                            )
-                        }
-                        entry<Route.Details> { key ->
-                            DetailsScreen(
-                                requestId = key.requestId,
-                                onBack = { backStack.removeLastOrNull() },
-                                onNavigateToEdit = { id -> backStack.add(Route.Edit(id)) }
-                            )
-                        }
-                        entry<Route.Edit> { key ->
-                            EditScreen(
-                                requestId = key.requestId,
-                                onBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-                        entry<Route.Create> {
-                            CreateScreen(
-                                onBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-                        entry<Route.RequestsMap> { key ->
-                            RequestsMapScreen(
-                                centerLat = key.latitude,
-                                centerLon = key.longitude,
-                                radiusKm = key.radiusKm,
-                                onBack = { backStack.removeLastOrNull() },
-                                onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
+                            RoadBuddyBottomBar(
+                                selectedTab = selectedTab,
+                                onTabSelected = { selectedTabName = it.name }
                             )
                         }
                     }
-                )
                 }
             }
         }
     })
+}
+
+private fun appEntryProvider(backStack: NavBackStack<NavKey>) = entryProvider<NavKey> {
+    entry<Route.Home> {
+        HomeScreen(
+            onNavigateToDetails = { id -> backStack.add(Route.Details(id)) },
+            onNavigateToCreate = { backStack.add(Route.Create) },
+            onNavigateToMap = { lat, lon, radius ->
+                backStack.add(Route.RequestsMap(lat, lon, radius))
+            }
+        )
+    }
+    entry<Route.MyRequests> {
+        MyRequestsScreen(
+            onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
+        )
+    }
+    entry<Route.ActiveHelp> {
+        ActiveHelpScreen(
+            onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
+        )
+    }
+    entry<Route.Details> { key ->
+        DetailsScreen(
+            requestId = key.requestId,
+            onBack = { backStack.popToRoot() },
+            onNavigateToEdit = { id -> backStack.add(Route.Edit(id)) }
+        )
+    }
+    entry<Route.Edit> { key ->
+        EditScreen(
+            requestId = key.requestId,
+            onBack = { backStack.popToRoot() }
+        )
+    }
+    entry<Route.Create> {
+        CreateScreen(
+            onBack = { backStack.popToRoot() }
+        )
+    }
+    entry<Route.RequestsMap> { key ->
+        RequestsMapScreen(
+            centerLat = key.latitude,
+            centerLon = key.longitude,
+            radiusKm = key.radiusKm,
+            onBack = { backStack.popToRoot() },
+            onNavigateToDetails = { id -> backStack.add(Route.Details(id)) }
+        )
+    }
+}
+
+private fun NavBackStack<NavKey>.popToRoot() {
+    while (size > 1) {
+        removeAt(lastIndex)
+    }
 }

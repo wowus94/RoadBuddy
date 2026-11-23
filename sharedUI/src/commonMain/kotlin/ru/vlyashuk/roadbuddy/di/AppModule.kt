@@ -37,6 +37,7 @@ import ru.vlyashuk.roadbuddy.domain.usecase.auth.ResetPasswordUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignInUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignOutUseCase
 import ru.vlyashuk.roadbuddy.domain.usecase.auth.SignUpUseCase
+import ru.vlyashuk.roadbuddy.presentation.activehelp.ActiveHelpViewModel
 import ru.vlyashuk.roadbuddy.presentation.create.CreateViewModel
 import ru.vlyashuk.roadbuddy.presentation.details.DetailsViewModel
 import ru.vlyashuk.roadbuddy.presentation.edit.EditViewModel
@@ -92,6 +93,7 @@ val appModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::MyRequestsViewModel)
+    viewModelOf(::ActiveHelpViewModel)
     viewModelOf(::CreateViewModel)
     viewModel { (requestId: String) ->
         DetailsViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), requestId)
