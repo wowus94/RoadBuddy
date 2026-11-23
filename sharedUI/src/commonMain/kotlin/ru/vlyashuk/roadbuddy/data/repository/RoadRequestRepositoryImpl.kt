@@ -16,8 +16,10 @@ import ru.vlyashuk.roadbuddy.data.local.mapper.RoadRequestMapper
 import ru.vlyashuk.roadbuddy.data.remote.firestore.RoadRequestRemoteDataSource
 import ru.vlyashuk.roadbuddy.domain.error.AppError
 import ru.vlyashuk.roadbuddy.domain.error.AppResult
+import ru.vlyashuk.roadbuddy.domain.model.RequestActor
 import ru.vlyashuk.roadbuddy.domain.model.RequestResponse
 import ru.vlyashuk.roadbuddy.domain.model.RequestStatus
+import ru.vlyashuk.roadbuddy.domain.model.RequestStatusTransitions
 import ru.vlyashuk.roadbuddy.domain.model.RequestsPage
 import ru.vlyashuk.roadbuddy.domain.model.RequestsPageQuery
 import ru.vlyashuk.roadbuddy.domain.model.RoadRequest
@@ -140,7 +142,12 @@ class RoadRequestRepositoryImpl(
         val newId = request.id.ifBlank { Random.nextInt(10000, 99999).toString() }
         val now = Clock.System.now()
         val toSave = request.copy(
-            id = newId, authorId = currentUid, createdAt = now, updatedAt = now
+            id = newId,
+            authorId = currentUid,
+            helperId = "",
+            status = RequestStatus.OPEN,
+            createdAt = now,
+            updatedAt = now
         )
         remote.createRequest(toSave)
         cacheRequest(toSave)
@@ -153,11 +160,24 @@ class RoadRequestRepositoryImpl(
         val currentUid =
             getCurrentUserUseCase().first()?.uid ?: return AppResult.Failure(AppError.Unauthorized)
 
-        if (request.authorId.isNotBlank() && request.authorId != currentUid) {
+        val remoteRequest = remote.getRequest(request.id).first()
+            ?: return AppResult.Failure(AppError.NotFound)
+
+        if (remoteRequest.authorId != currentUid) {
             return AppResult.Failure(AppError.Forbidden)
         }
 
-        val toSave = request.copy(updatedAt = Clock.System.now())
+        val toSave = remoteRequest.copy(
+            title = request.title,
+            description = request.description,
+            type = request.type,
+            authorName = request.authorName,
+            contact = request.contact,
+            latitude = request.latitude,
+            longitude = request.longitude,
+            geohash = request.geohash,
+            updatedAt = Clock.System.now()
+        )
         remote.updateRequest(toSave)
         cacheRequest(toSave)
         AppResult.Success(Unit)
@@ -172,28 +192,41 @@ class RoadRequestRepositoryImpl(
         val remoteRequest = remote.getRequest(request.id).first()
             ?: return AppResult.Failure(AppError.NotFound)
 
-        val isAuthor = remoteRequest.authorId == currentUid
-        val isHelper = remoteRequest.helperId == currentUid
+        val from = remoteRequest.status
+        val to = request.status
 
-        val newHelperId = when {
-            isAuthor -> remoteRequest.helperId
-            remoteRequest.status == RequestStatus.OPEN && request.status == RequestStatus.IN_PROGRESS ->
-                currentUid
-            isHelper -> remoteRequest.helperId
-            else -> return AppResult.Failure(AppError.Forbidden)
+        if (from == to) return AppResult.Success(Unit)
+
+        val actor = when {
+            remoteRequest.authorId == currentUid -> RequestActor.AUTHOR
+            remoteRequest.helperId == currentUid -> RequestActor.HELPER
+            else -> RequestActor.OTHER
         }
 
-        val finalHelperId =
-            if (request.status == RequestStatus.OPEN) "" else newHelperId
+        if (!RequestStatusTransitions.isTransitionAllowed(from, to)) {
+            return AppResult.Failure(AppError.Conflict)
+        }
+        if (!RequestStatusTransitions.isActorAllowed(from, to, actor)) {
+            return AppResult.Failure(AppError.Forbidden)
+        }
+
+        val newHelperId = when {
+            to == RequestStatus.OPEN -> ""
+            from == RequestStatus.OPEN && to == RequestStatus.IN_PROGRESS &&
+                actor == RequestActor.OTHER -> currentUid
+            else -> remoteRequest.helperId
+        }
 
         val toSave = remoteRequest.copy(
-            status = request.status,
-            helperId = finalHelperId,
+            status = to,
+            helperId = newHelperId,
             updatedAt = Clock.System.now()
         )
         remote.updateRequest(toSave)
         cacheRequest(toSave)
         AppResult.Success(Unit)
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
         AppResult.Failure(AppError.Network)
     }
