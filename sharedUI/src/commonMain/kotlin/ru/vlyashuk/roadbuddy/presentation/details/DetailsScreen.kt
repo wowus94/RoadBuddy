@@ -48,6 +48,7 @@ import roadbuddy.sharedui.generated.resources.action_reopen_request
 import roadbuddy.sharedui.generated.resources.action_respond
 import roadbuddy.sharedui.generated.resources.back
 import roadbuddy.sharedui.generated.resources.cancel
+import roadbuddy.sharedui.generated.resources.contact_hidden_hint
 import roadbuddy.sharedui.generated.resources.delete
 import roadbuddy.sharedui.generated.resources.delete_request_desc
 import roadbuddy.sharedui.generated.resources.delete_request_title
@@ -219,7 +220,14 @@ private fun RequestDetails(
         DetailItem(label = stringResource(Res.string.label_description), value = request.description)
         DetailItem(label = stringResource(Res.string.label_type), value = request.type.toLocalizedName())
         DetailItem(label = stringResource(Res.string.label_author), value = request.authorName)
-        DetailItem(label = stringResource(Res.string.label_contact), value = request.contact)
+        DetailItem(
+            label = stringResource(Res.string.label_contact),
+            value = if (isOwner || isHelper) {
+                request.contact
+            } else {
+                stringResource(Res.string.contact_hidden_hint)
+            }
+        )
 
         request.latitude?.let { lat ->
             request.longitude?.let { lon ->
