@@ -79,6 +79,7 @@
     <string name="withdraw_response">Withdraw response</string>
     <string name="select_helper">Select</string>
     <string name="label_helper">Helper</string>
+    <string name="contact_hidden_hint">Visible to the author and the assigned helper</string>
 
     <!-- Create and Edit Request Screens -->
     <string name="new_request">New request</string>

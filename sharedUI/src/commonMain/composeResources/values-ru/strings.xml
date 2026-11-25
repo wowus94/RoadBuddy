@@ -79,6 +79,7 @@
     <string name="withdraw_response">Отозвать отклик</string>
     <string name="select_helper">Выбрать</string>
     <string name="label_helper">Помощник</string>
+    <string name="contact_hidden_hint">Видны автору и назначенному помощнику</string>
 
     <!-- Create and Edit Request Screens -->
     <string name="new_request">Новая заявка</string>
